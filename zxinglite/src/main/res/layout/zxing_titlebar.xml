@@ -31,7 +31,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:scaleType="centerInside"
-            android:src="@mipmap/ic_back"/>
+            android:src="@mipmap/zxing_ic_back"/>
 
     </LinearLayout>
 
@@ -52,7 +52,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:scaleType="centerInside"
-            android:src="@mipmap/torch"
+            android:src="@mipmap/zxing_torch"
             />
 
     </LinearLayout>

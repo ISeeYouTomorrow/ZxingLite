@@ -169,7 +169,7 @@ public final class CameraManager {
     }
 
     /**
-     * Convenience method for {@link com.google.zxing.client.android.CaptureActivity}
+     * Convenience method for {@link com.google.zxing.client.android}
      *
      * @param newSetting if {@code true}, light should be turned on if currently off. And vice versa.
      */
@@ -352,4 +352,58 @@ public final class CameraManager {
                 rect.width(), rect.height(), false);
     }
 
+    /**
+     * 获取变焦值
+     * @return
+     */
+    public synchronized int getMaxZoom() {
+        int max = 0;
+        Camera theCamera;
+        try {
+            theCamera = camera.getCamera();
+        } catch (Exception e) {
+            e.printStackTrace();
+            theCamera = null;
+        }
+        if (theCamera != null) {
+            Camera.Parameters parameters = camera.getCamera().getParameters();
+            boolean isSuppport = false;
+            if (theCamera.getParameters().isZoomSupported()) {
+                isSuppport = true;
+            }
+            if (isSuppport) {
+                max = parameters.getMaxZoom();
+            }
+        }
+        return max;
+    }
+
+    /**
+     * 变焦
+     * @return
+     */
+    public synchronized void zoom(int zoomValue) {
+        Camera theCamera;
+        try {
+            theCamera = camera.getCamera();
+        } catch (Exception e) {
+            e.printStackTrace();
+            theCamera = null;
+        }
+        if (theCamera != null) {
+            Camera.Parameters parameters = theCamera.getParameters();
+            boolean isSuppport = false;
+            if (theCamera.getParameters().isZoomSupported()) {
+                isSuppport = true;
+            }
+            if (isSuppport) {
+                try {
+                    parameters.setZoom(zoomValue);
+                    theCamera.setParameters(parameters);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

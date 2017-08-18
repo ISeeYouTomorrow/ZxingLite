@@ -7,22 +7,32 @@
     android:orientation="vertical"
     >
 
-    <include layout="@layout/titlebar"></include>
+    <include layout="@layout/zxing_titlebar"></include>
 
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-
         >
         <SurfaceView
             android:id="@+id/preview_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <SeekBar
+            android:id="@+id/zoom_seekbar"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="50dp"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:max="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <com.google.zxing.client.android.AutoScannerView
             android:id="@+id/autoscanner_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
     </RelativeLayout>
 </LinearLayout>

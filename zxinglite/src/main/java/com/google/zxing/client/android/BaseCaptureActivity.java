@@ -10,6 +10,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -404,5 +405,8 @@ public abstract class BaseCaptureActivity extends Activity implements SurfaceHol
      * @param barcode
      * @param scaleFactor
      */
+
+
+
     public abstract void dealDecode(Result rawResult, Bitmap barcode, float scaleFactor);
 }
