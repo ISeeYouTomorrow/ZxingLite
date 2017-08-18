@@ -1,14 +1,19 @@
-package yangxixi.zxinglib;
+package com.google.zxing.activity;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.zxing.R;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.AutoScannerView;
 import com.google.zxing.client.android.BaseCaptureActivity;
+import com.google.zxing.client.android.camera.CameraManager;
 
 /**
  * 模仿微信的扫描界面
@@ -19,6 +24,10 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     private SurfaceView surfaceView;
     private AutoScannerView autoScannerView;
+    private TextView title;
+    private LinearLayout lLeft;
+    private LinearLayout lRight;
+    private boolean isTorchOpenning=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +35,24 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         setContentView(R.layout.activity_wechat_capture);
         surfaceView = (SurfaceView) findViewById(R.id.preview_view);
         autoScannerView = (AutoScannerView) findViewById(R.id.autoscanner_view);
+        title=(TextView) findViewById(R.id.titlebar_tv_title);
+        lLeft=(LinearLayout) findViewById(R.id.titlebar_ll_left);
+        lRight=(LinearLayout) findViewById(R.id.titlebar_ll_right);
+
+        lRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {//闪光灯
+
+
+                if (isTorchOpenning) {
+                    isTorchOpenning=false;
+
+                } else {
+                    isTorchOpenning=true;
+                }
+                getCameraManager().setTorch(isTorchOpenning);
+            }
+        });
     }
 
     @Override

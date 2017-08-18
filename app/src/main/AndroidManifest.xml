@@ -23,7 +23,7 @@
             android:name=".DefaultCaptureActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".WeChatCaptureActivity"
+            android:name="com.google.zxing.activity.WeChatCaptureActivity"
             android:screenOrientation="portrait" />
     </application>
 
