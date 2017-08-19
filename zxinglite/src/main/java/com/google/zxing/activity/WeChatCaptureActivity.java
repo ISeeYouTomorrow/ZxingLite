@@ -2,10 +2,9 @@ package com.google.zxing.activity;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,6 +12,8 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -23,8 +24,8 @@ import com.google.zxing.R;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.AutoScannerView;
 import com.google.zxing.client.android.BaseCaptureActivity;
-import com.google.zxing.client.android.camera.CameraManager;
 import com.google.zxing.listener.ResultListener;
+import com.google.zxing.utils.PicDecode;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
@@ -42,10 +43,12 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     private LinearLayout lRight;
     private RelativeLayout titlebarBackground;
     private SeekBar mSeekbar;
+    private ImageView mSelect;
     private Intent intent = new Intent();
     private boolean isTorchOpenning = false;
     private static String title = "二维码扫描";
     private static ResultListener resultListener;
+    private static final String tag="WeChatCaptureActivity";
     public static String result;
 
     public static void init(@NonNull Activity context, ResultListener resultListener, int colorPrimary, @NonNull String title) {
@@ -78,6 +81,28 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {//识别返回的本地二维码图片
+            try {
+                Uri uri = data.getData();
+                Log.e(tag,resultCode+"onActivityResult "+uri.getPath());
+
+                result=PicDecode.scanImage(WeChatCaptureActivity.this, uri).getText();
+
+                if (!result.equals("")) {
+                    putResult(result);
+                } else {
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(tag,e.getMessage());
+            }
+        }
+    }
+
+    @Override//检查摄像头权限
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (checkSelfPermission(Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
@@ -108,6 +133,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         lLeft = (LinearLayout) findViewById(R.id.titlebar_ll_left);
         lRight = (LinearLayout) findViewById(R.id.titlebar_ll_right);
         mSeekbar = (SeekBar) findViewById(R.id.zoom_seekbar);
+        mSelect= (ImageView) findViewById(R.id.iv_select_photo);
         //---------------------------
         titlebarBackground.setBackgroundColor(colorPrimary);
         mTitle.setText(title);
@@ -135,7 +161,14 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             }
         });
 
-        mSeekbar.setProgress(0);
+        mSelect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectPic();
+            }
+        });
+
+        mSeekbar.setProgress(0);//监听滑动栏数值，变焦
         mSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -152,7 +185,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
             }
         });
-        //获取变焦值
+        //获取最大变焦值
         (new Handler()).postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -160,8 +193,8 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                     @Override
                     public void run() {
                         try {
-                            int max=getCameraManager().getMaxZoom();
-                            Log.e("maxZoom",max+"");
+                            int max = getCameraManager().getMaxZoom();
+                            Log.d("maxZoom", max + "");
                             mSeekbar.setMax(max);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -169,7 +202,9 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                     }
                 });
             }
-        },50);
+        }, 50);
+
+
     }
 
     @Override
@@ -186,12 +221,30 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     @Override
     public void dealDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
         result = rawResult.getText();
+        putResult(result);
+//        对此次扫描结果不满意可以调用
+//        reScan();
+    }
+
+    private void selectPic() {
+        Intent innerIntent = new Intent();
+        if (Build.VERSION.SDK_INT < 19) {
+            innerIntent.setAction(Intent.ACTION_GET_CONTENT);
+        } else {
+            innerIntent.setAction(Intent.ACTION_PICK);
+        }
+        innerIntent.setType("image/*");
+        Intent wrapperIntent = Intent.createChooser(innerIntent, "选择二维码图片");
+        startActivityForResult(wrapperIntent, 1002);
+    }
+
+    private void putResult(String result){//返回扫描结果
         intent.putExtra("result", result);
         playBeepSoundAndVibrate(true, true);
         setResult(1001, intent);//返回string结果
-        resultListener.onResult(result);
+        if (resultListener!=null) {
+            resultListener.onResult(result);
+        }
         finish();
-//        对此次扫描结果不满意可以调用
-//        reScan();
     }
 }

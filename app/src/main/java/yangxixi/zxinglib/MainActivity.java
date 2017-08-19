@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity implements ResultListener{
 
                 if (data!=null) {
                     String result=data.getStringExtra("result");
-                    toast(result);
+                    toast("onActivityResult:"+result);
                 } else {
                 }
             } catch (Exception e) {

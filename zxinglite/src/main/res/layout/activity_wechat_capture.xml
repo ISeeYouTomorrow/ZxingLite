@@ -14,25 +14,40 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
+
         <SurfaceView
             android:id="@+id/preview_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <SeekBar
-            android:id="@+id/zoom_seekbar"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="50dp"
-            android:layout_marginLeft="50dp"
-            android:layout_marginRight="50dp"
-            android:max="1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+
+
 
         <com.google.zxing.client.android.AutoScannerView
             android:id="@+id/autoscanner_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+
+        <SeekBar
+            android:id="@+id/zoom_seekbar"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="90dp"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:max="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:id="@+id/iv_select_photo"
+            android:layout_marginBottom="20dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_crop_original_grey600_48dp"
+            />
     </RelativeLayout>
 </LinearLayout>
