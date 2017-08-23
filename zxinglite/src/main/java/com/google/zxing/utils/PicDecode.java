@@ -34,7 +34,7 @@ import java.util.Hashtable;
  */
 
 public class PicDecode {
-    private static Bitmap scanBitmap;
+//    private static Bitmap scanBitmap;
     private static final String tag = "PicDecode";
 
     public static Result scanImage(Activity context, Uri uri) {
@@ -42,14 +42,14 @@ public class PicDecode {
             Log.e(tag, "null");
             return null;
         }
-
+        Bitmap scanBitmap;
         Hashtable<DecodeHintType, Object> hints = new Hashtable();
         hints.put(DecodeHintType.CHARACTER_SET, "UTF-8"); // 设置二维码内容的编码
         hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
         hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
 
         try {
-            scanBitmap = getBitmapFormUri(context, uri);
+            scanBitmap = getBitmapFormUri(context, uri,0);
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(tag, e.getMessage());
@@ -64,50 +64,74 @@ public class PicDecode {
 
         QRCodeReader reader = new QRCodeReader();
         Result result = null;
+
         try {
             result = reader.decode(binaryBitmap1, hints);
 
         } catch (NotFoundException e) {
-            Log.e(tag, "notFind");
+            Log.e(tag, "NotFoundException");
+            result=backupDecode(context,uri,result);
             e.printStackTrace();
         } catch (ChecksumException e) {
+            Log.e(tag,"ChecksumException");
+            result=backupDecode(context,uri,result);
+            e.printStackTrace();
+        } catch (FormatException e) {
+            Log.e(tag,"FormatException");
+            result=backupDecode(context,uri,result);
+            e.printStackTrace();
+        } catch (Exception e) {
+            Log.e(tag,e.getMessage());
+            result=backupDecode(context,uri,result);
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    private static Result backupDecode(Activity context,Uri uri,Result result){
+
+        try {
+            result=null;
+            //备用方案
+            Log.e(tag, "备用方案");
+            Bitmap scanBitmap;
+            Hashtable<DecodeHintType, Object> hints = new Hashtable();
+            hints.put(DecodeHintType.CHARACTER_SET, "UTF-8"); // 设置二维码内容的编码
+            hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+            //复杂模式，开启PURE_BARCODE模式
+            hints.put(DecodeHintType.PURE_BARCODE, Boolean.TRUE);
 
             try {
-                result=null;
-                //备用方案
-                    Log.e(tag, "备用方案");
-                    byte[] dataYUV = getYUV420sp(scanBitmap.getWidth(), scanBitmap.getHeight(), scanBitmap);
-                    PlanarYUVLuminanceSource source2 = new PlanarYUVLuminanceSource(dataYUV,
-                            scanBitmap.getWidth(),
-                            scanBitmap.getHeight(),
-                            0, 0,
-                            scanBitmap.getWidth(),
-                            scanBitmap.getHeight(),
-                            false);
-                    BinaryBitmap binaryBitmap2 = new BinaryBitmap(new HybridBinarizer(source2));
-                    result = reader.decode(binaryBitmap2, hints);
-                    Log.e(tag,result.getText());
-            } catch (NotFoundException e1) {
-                e1.printStackTrace();
-                Log.e(tag,e1.getMessage());
-            } catch (ChecksumException e1) {
-                e1.printStackTrace();
-                Log.e(tag,e1.getMessage());
-            } catch (FormatException e1) {
-                e1.printStackTrace();
-                Log.e(tag,e1.getMessage());
+                scanBitmap = getBitmapFormUri(context, uri,1);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(tag, e.getMessage());
+                return null;
             }
+            int width=scanBitmap.getWidth();
+            int height=scanBitmap.getHeight();
+            byte[] dataYUV = getYUV420sp(width,height, scanBitmap);
+            PlanarYUVLuminanceSource source2 = new PlanarYUVLuminanceSource(dataYUV,
+                    width,
+                    height,
+                    0, 0,
+                    width,
+                    height,
+                    false);
+            BinaryBitmap binaryBitmap2 = new BinaryBitmap(new HybridBinarizer(source2));
+            QRCodeReader reader = new QRCodeReader();
+            result = reader.decode(binaryBitmap2, hints);
+            Log.e(tag,result.getText());
+        } catch (NotFoundException e1) {
+            Log.e(tag,e1.getMessage());
+            e1.printStackTrace();
 
-            e.printStackTrace();
-            Log.e(tag,e.getMessage());
-
-        } catch (FormatException e) {
-            e.printStackTrace();
-            Log.e(tag,e.getMessage());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(tag,e.getMessage());
+        } catch (ChecksumException e1) {
+            Log.e(tag,e1.getMessage());
+            e1.printStackTrace();
+        } catch (FormatException e1) {
+            Log.e(tag,e1.getMessage());
+            e1.printStackTrace();
         }
         return result;
     }
@@ -180,7 +204,7 @@ public class PicDecode {
      *
      * @param uri
      */
-    public static Bitmap getBitmapFormUri(Activity ac, Uri uri) throws FileNotFoundException, IOException {
+    public static Bitmap getBitmapFormUri(Activity ac, Uri uri,int i) throws IOException {
         InputStream input = ac.getContentResolver().openInputStream(uri);
         BitmapFactory.Options onlyBoundsOptions = new BitmapFactory.Options();
         onlyBoundsOptions.inJustDecodeBounds = true;
@@ -212,8 +236,11 @@ public class PicDecode {
         Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
         input.close();
 
-        return bitmap;
-//        return compressImage(bitmap);//再进行质量压缩
+        if (i==0) {
+            return bitmap;
+        } else {
+            return compressImage(bitmap);//再进行质量压缩
+        }
     }
 
     /**
@@ -227,7 +254,7 @@ public class PicDecode {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
         int options = 100;
-        while (baos.toByteArray().length / 1024 > 200) {  //循环判断如果压缩后图片是否大于200kb,大于继续压缩
+        while (baos.toByteArray().length / 1024 > 100) {  //循环判断如果压缩后图片是否大于?kb,大于继续压缩
             baos.reset();//重置baos即清空baos
             //第一个参数 ：图片格式 ，第二个参数： 图片质量，100为最高，0为最差  ，第三个参数：保存压缩后的数据的流
             image.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中

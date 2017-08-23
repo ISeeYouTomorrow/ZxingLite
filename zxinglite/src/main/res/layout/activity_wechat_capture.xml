@@ -13,6 +13,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_weight="1"
         >
 
         <SurfaceView
@@ -32,22 +33,22 @@
         <SeekBar
             android:id="@+id/zoom_seekbar"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="90dp"
+            android:layout_marginBottom="70dp"
             android:layout_marginLeft="50dp"
             android:layout_marginRight="50dp"
             android:max="1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <ImageView
-            android:id="@+id/iv_select_photo"
-            android:layout_marginBottom="20dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_crop_original_grey600_48dp"
-            />
+
     </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/iv_select_photo"
+
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/colorPrimary"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_crop_original_48dp" />
 </LinearLayout>

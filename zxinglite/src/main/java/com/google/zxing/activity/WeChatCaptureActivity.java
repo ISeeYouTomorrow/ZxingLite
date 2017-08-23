@@ -12,7 +12,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.ImageButton;
+
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -48,7 +48,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     private boolean isTorchOpenning = false;
     private static String title = "二维码扫描";
     private static ResultListener resultListener;
-    private static final String tag="WeChatCaptureActivity";
+    private static final String tag = "WeChatCaptureActivity";
     public static String result;
 
     public static void init(@NonNull Activity context, ResultListener resultListener, int colorPrimary, @NonNull String title) {
@@ -61,7 +61,6 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             } else {
                 Log.d(TAG, colorPrimary + "");
             }
-
         } catch (Exception e) {
             colorPrimary = context.getResources().getColor(R.color.colorPrimary);
             e.printStackTrace();
@@ -83,22 +82,42 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        final Uri uri;
+        Uri uriTemp = null;
         if (resultCode == RESULT_OK) {//识别返回的本地二维码图片
             try {
-                Uri uri = data.getData();
-                Log.e(tag,resultCode+"onActivityResult "+uri.getPath());
-
-                result=PicDecode.scanImage(WeChatCaptureActivity.this, uri).getText();
-
-                if (!result.equals("")) {
-                    putResult(result);
-                } else {
-                    return;
-                }
+                uriTemp = data.getData();
+                Log.e(tag, resultCode + "onActivityResult " + uriTemp.getPath());
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e(tag,e.getMessage());
             }
+            if (uriTemp != null) {
+                uri = uriTemp;
+            } else {
+                return;
+            }
+            (new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        result = PicDecode.scanImage(WeChatCaptureActivity.this, uri).getText();
+
+                        if (!result.equals("")) {
+                            WeChatCaptureActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    putResult(result);
+                                }
+                            });
+                        } else {
+                            return;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Log.e(tag, e.getMessage());
+                    }
+                }
+            })).start();
         }
     }
 
@@ -133,9 +152,11 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         lLeft = (LinearLayout) findViewById(R.id.titlebar_ll_left);
         lRight = (LinearLayout) findViewById(R.id.titlebar_ll_right);
         mSeekbar = (SeekBar) findViewById(R.id.zoom_seekbar);
-        mSelect= (ImageView) findViewById(R.id.iv_select_photo);
+        mSelect = (ImageView) findViewById(R.id.iv_select_photo);
         //---------------------------
         titlebarBackground.setBackgroundColor(colorPrimary);
+        mSelect.setBackgroundColor(colorPrimary);
+        //---------------------------
         mTitle.setText(title);
 
         lRight.setOnClickListener(new View.OnClickListener() {
@@ -226,7 +247,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 //        reScan();
     }
 
-    private void selectPic() {
+    private void selectPic() {//选择本地二维码
         Intent innerIntent = new Intent();
         if (Build.VERSION.SDK_INT < 19) {
             innerIntent.setAction(Intent.ACTION_GET_CONTENT);
@@ -238,11 +259,11 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         startActivityForResult(wrapperIntent, 1002);
     }
 
-    private void putResult(String result){//返回扫描结果
+    private void putResult(String result) {//返回扫描结果
         intent.putExtra("result", result);
         playBeepSoundAndVibrate(true, true);
         setResult(1001, intent);//返回string结果
-        if (resultListener!=null) {
+        if (resultListener != null) {
             resultListener.onResult(result);
         }
         finish();
