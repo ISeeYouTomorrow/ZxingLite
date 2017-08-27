@@ -26,4 +26,23 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         android:text="模仿微信扫描启动" />
+
+    <EditText
+        android:id="@+id/print_text"
+        android:textSize="14sp"
+        android:textColor="@android:color/black"
+        android:background="@android:drawable/editbox_background"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:maxLines="1"
+        android:inputType="text"
+        />
+    <ImageView
+        android:scaleType="centerInside"
+        android:id="@+id/imageview"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="200dp" />
+
 </RelativeLayout>

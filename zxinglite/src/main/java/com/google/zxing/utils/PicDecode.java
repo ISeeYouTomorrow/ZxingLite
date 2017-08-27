@@ -1,11 +1,13 @@
 package com.google.zxing.utils;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -19,6 +21,7 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
+import com.google.zxing.activity.WeChatCaptureActivity;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
 
@@ -27,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
@@ -36,7 +40,7 @@ import java.util.Hashtable;
 public class PicDecode {
 //    private static Bitmap scanBitmap;
     private static final String tag = "PicDecode";
-
+    private static byte[] yuvs;
     public static Result scanImage(Activity context, Uri uri) {
         if (uri == null) {
             Log.e(tag, "null");
@@ -50,6 +54,7 @@ public class PicDecode {
 
         try {
             scanBitmap = getBitmapFormUri(context, uri,0);
+            WeChatCaptureActivity.bitmap=scanBitmap;
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(tag, e.getMessage());
@@ -65,9 +70,14 @@ public class PicDecode {
         QRCodeReader reader = new QRCodeReader();
         Result result = null;
 
+//        if (true){
+//            result=backupDecode(context,uri,result);
+//            return result;
+//        }
+
         try {
             result = reader.decode(binaryBitmap1, hints);
-
+            Log.e(tag,result.getText());
         } catch (NotFoundException e) {
             Log.e(tag, "NotFoundException");
             result=backupDecode(context,uri,result);
@@ -85,10 +95,11 @@ public class PicDecode {
             result=backupDecode(context,uri,result);
             e.printStackTrace();
         }
+//        scanBitmap.recycle();
         return result;
     }
 
-    private static Result backupDecode(Activity context,Uri uri,Result result){
+    public static Result backupDecode(Activity context,Uri uri,Result result){
 
         try {
             result=null;
@@ -99,10 +110,12 @@ public class PicDecode {
             hints.put(DecodeHintType.CHARACTER_SET, "UTF-8"); // 设置二维码内容的编码
             hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
             //复杂模式，开启PURE_BARCODE模式
-            hints.put(DecodeHintType.PURE_BARCODE, Boolean.TRUE);
-
+//            hints.put(DecodeHintType.PURE_BARCODE, Boolean.TRUE);
+            hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
             try {
                 scanBitmap = getBitmapFormUri(context, uri,1);
+//                scanBitmap=decodeSampledBitmapFromFile(getRealFilePathFromUri(context,uri),1024,1024);
+                WeChatCaptureActivity.bitmap=scanBitmap;
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e(tag, e.getMessage());
@@ -120,31 +133,33 @@ public class PicDecode {
                     false);
             BinaryBitmap binaryBitmap2 = new BinaryBitmap(new HybridBinarizer(source2));
             QRCodeReader reader = new QRCodeReader();
+//            scanBitmap.recycle();
+
             result = reader.decode(binaryBitmap2, hints);
             Log.e(tag,result.getText());
         } catch (NotFoundException e1) {
-            Log.e(tag,e1.getMessage());
+            Log.e(tag,"NotFoundException");
             e1.printStackTrace();
 
         } catch (ChecksumException e1) {
-            Log.e(tag,e1.getMessage());
+            Log.e(tag,"ChecksumException");
             e1.printStackTrace();
         } catch (FormatException e1) {
-            Log.e(tag,e1.getMessage());
+            Log.e(tag,"FormatException");
             e1.printStackTrace();
         }
         return result;
     }
 
-    public static byte[] getYUV420sp(int inputWidth, int inputHeight,
-                                     Bitmap scaled) {
-        int[] argb = new int[inputWidth * inputHeight];
-        scaled.getPixels(argb, 0, inputWidth, 0, 0, inputWidth, inputHeight);
-        byte[] yuv = new byte[inputWidth * inputHeight * 3 / 2];
-        encodeYUV420SP(yuv, argb, inputWidth, inputHeight);
-        scaled.recycle();
-        return yuv;
-    }
+//    public static byte[] getYUV420sp(int inputWidth, int inputHeight,
+//                                     Bitmap scaled) {
+//        int[] argb = new int[inputWidth * inputHeight];
+//        scaled.getPixels(argb, 0, inputWidth, 0, 0, inputWidth, inputHeight);
+//        byte[] yuv = new byte[inputWidth * inputHeight * 3 / 2];
+//        encodeYUV420SP(yuv, argb, inputWidth, inputHeight);
+//        scaled.recycle();
+//        return yuv;
+//    }
 
 
     private static void encodeYUV420SP(byte[] yuv420sp, int[] argb, int width,
@@ -205,7 +220,13 @@ public class PicDecode {
      * @param uri
      */
     public static Bitmap getBitmapFormUri(Activity ac, Uri uri,int i) throws IOException {
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        Log.d(tag, "Max memory is " + maxMemory + "KB");
+        String path=getRealFilePathFromUri(ac,uri);
+        int degree=PhotoBitmapUtils.readPictureDegree(path);
+
         InputStream input = ac.getContentResolver().openInputStream(uri);
+
         BitmapFactory.Options onlyBoundsOptions = new BitmapFactory.Options();
         onlyBoundsOptions.inJustDecodeBounds = true;
         onlyBoundsOptions.inDither = true;//optional
@@ -216,8 +237,8 @@ public class PicDecode {
         int originalHeight = onlyBoundsOptions.outHeight;
         if ((originalWidth == -1) || (originalHeight == -1))
             return null;
-        float hh = 1280f;//这里设置高度
-        float ww = 720f;//这里设置宽度
+        float hh = 1080f;//这里设置高度
+        float ww = 1080f;//这里设置宽度
         //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
         int be = 1;//be=1表示不缩放
         if (originalWidth > originalHeight && originalWidth > ww) {//如果宽度大的话根据宽度固定大小缩放
@@ -227,6 +248,7 @@ public class PicDecode {
         }
         if (be <= 0)
             be = 1;
+        Log.e(tag,"压缩比例be:"+be);
         //比例压缩
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
         bitmapOptions.inSampleSize = be;//设置缩放比例
@@ -236,6 +258,10 @@ public class PicDecode {
         Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
         input.close();
 
+        bitmap=PhotoBitmapUtils.rotaingImageView(degree,bitmap);
+        //bitmap=ThumbnailUtils.extractThumbnail(bitmap,512,512);
+
+        Log.d(tag," "+degree);
         if (i==0) {
             return bitmap;
         } else {
@@ -250,7 +276,7 @@ public class PicDecode {
      * @return
      */
     public static Bitmap compressImage(Bitmap image) {
-
+        Log.d(tag,"compressImage");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
         int options = 100;
@@ -290,6 +316,115 @@ public class PicDecode {
                 return null;
             }
         }
+    }
+
+    /**
+     * Try to return the absolute file path from the given Uri
+     *
+     * @param context
+     * @param uri
+     * @return the file path or null
+     */
+    public static String getRealFilePathFromUri( final Context context, final Uri uri ) {
+        if ( null == uri ) return null;
+        final String scheme = uri.getScheme();
+        String data = null;
+        if ( scheme == null )
+            data = uri.getPath();
+        else if ( ContentResolver.SCHEME_FILE.equals( scheme ) ) {
+            data = uri.getPath();
+        } else if ( ContentResolver.SCHEME_CONTENT.equals( scheme ) ) {
+            Cursor cursor = context.getContentResolver().query( uri, new String[] { MediaStore.Images.ImageColumns.DATA }, null, null, null );
+            if ( null != cursor ) {
+                if ( cursor.moveToFirst() ) {
+                    int index = cursor.getColumnIndex( MediaStore.Images.ImageColumns.DATA );
+                    if ( index > -1 ) {
+                        data = cursor.getString( index );
+                    }
+                }
+                cursor.close();
+            }
+        }
+        return data;
+    }
+
+    /**
+     * 根据Bitmap的ARGB值生成YUV420SP数据。
+     *
+     * @param inputWidth image width
+     * @param inputHeight image height
+     * @param scaled bmp
+     * @return YUV420SP数组
+     */
+    public static byte[] getYUV420sp(int inputWidth, int inputHeight, Bitmap scaled) {
+        int[] argb = new int[inputWidth * inputHeight];
+        scaled.getPixels(argb, 0, inputWidth, 0, 0, inputWidth, inputHeight);
+        /**
+         * 需要转换成偶数的像素点，否则编码YUV420的时候有可能导致分配的空间大小不够而溢出。
+         */
+        int requiredWidth = inputWidth % 2 == 0 ? inputWidth : inputWidth + 1;
+        int requiredHeight = inputHeight % 2 == 0 ? inputHeight : inputHeight + 1;
+        int byteLength = requiredWidth * requiredHeight * 3 / 2;
+        if (yuvs == null || yuvs.length < byteLength) {
+            yuvs = new byte[byteLength];
+        } else {
+            Arrays.fill(yuvs, (byte) 0);
+        }
+        encodeYUV420SP(yuvs, argb, inputWidth, inputHeight);
+//        scaled.recycle();
+        return yuvs;
+    }
+
+    /**
+     * 根据给定的宽度和高度动态计算图片压缩比率
+     *
+     * @param options Bitmap配置文件
+     * @param reqWidth 需要压缩到的宽度
+     * @param reqHeight 需要压缩到的高度
+     * @return 压缩比
+     */
+    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
+
+    /**
+     * 将图片根据压缩比压缩成固定宽高的Bitmap，实际解析的图片大小可能和#reqWidth、#reqHeight不一样。
+     *
+     * @param imgPath 图片地址
+     * @param reqWidth 需要压缩到的宽度
+     * @param reqHeight 需要压缩到的高度
+     * @return Bitmap
+     */
+    public static Bitmap decodeSampledBitmapFromFile(String imgPath, int reqWidth, int reqHeight) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(imgPath, options);
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeFile(imgPath, options);
     }
 
 

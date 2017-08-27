@@ -1,4 +1,4 @@
-package yangxixi.zxinglib;
+package yangxixi.zxinglib.activity;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -9,6 +9,8 @@ import android.widget.Toast;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.BaseCaptureActivity;
 import com.google.zxing.client.android.ViewfinderView;
+
+import yangxixi.zxinglib.R;
 
 /**
  * 默认的扫描界面

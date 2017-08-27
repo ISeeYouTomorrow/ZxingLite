@@ -2,8 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="yangxixi.zxinglib">
 
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.VIBRATE" />
+
 
     <application
         android:allowBackup="true"
@@ -19,7 +18,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DefaultCaptureActivity"
+            android:name=".activity.DefaultCaptureActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name="com.google.zxing.activity.WeChatCaptureActivity"

@@ -232,7 +232,7 @@ public abstract class BaseCaptureActivity extends Activity implements SurfaceHol
         } catch (RuntimeException e) {
             // Barcode Scanner has seen crashes in the wild of this variety:
             // java.?lang.?RuntimeException: Fail to connect to camera service
-            Log.w(TAG, "Unexpected error initializing camera", e);
+            Log.w(TAG, "启动摄像机未知错误", e);
             displayFrameworkBugMessageAndExit();
         }
     }
@@ -240,12 +240,13 @@ public abstract class BaseCaptureActivity extends Activity implements SurfaceHol
     private void displayFrameworkBugMessageAndExit() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.app_name));
-        builder.setMessage("相机故障，可能是相关权限拍照和录像未打开，请尝试打开再重试。");
+        builder.setMessage("相机故障，可能是拍照和录像相关权限未打开，请尝试打开再重试。");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
                 showInstalledAppDetails(getApplicationContext(), getPackageName());
+                finish();
             }
         });
         builder.setOnCancelListener(new DialogInterface.OnCancelListener() {

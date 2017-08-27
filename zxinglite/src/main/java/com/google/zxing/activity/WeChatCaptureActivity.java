@@ -33,11 +33,18 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
  * 模仿微信的扫描界面
  */
 public class WeChatCaptureActivity extends BaseCaptureActivity {
-
-    private static final String TAG = WeChatCaptureActivity.class.getSimpleName();
+    public static Bitmap bitmap = null;
+    private static final String tag = "WeChatCaptureActivity";
     private static int colorPrimary = 0;
+    private static String title = "二维码扫描";
+    private static ResultListener resultListener;
+    private static Handler handlerZoom;
+    private static Thread resultThread;
+    public static String result;
+
     private SurfaceView surfaceView;
     private AutoScannerView autoScannerView;
+
     private TextView mTitle;
     private LinearLayout lLeft;
     private LinearLayout lRight;
@@ -46,10 +53,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     private ImageView mSelect;
     private Intent intent = new Intent();
     private boolean isTorchOpenning = false;
-    private static String title = "二维码扫描";
-    private static ResultListener resultListener;
-    private static final String tag = "WeChatCaptureActivity";
-    public static String result;
+
 
     public static void init(@NonNull Activity context, ResultListener resultListener, int colorPrimary, @NonNull String title) {
         try {//检查颜色是否为0
@@ -59,24 +63,29 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             if (colorPrimary == 0) {
                 colorPrimary = context.getResources().getColor(R.color.colorPrimary);
             } else {
-                Log.d(TAG, colorPrimary + "");
+                Log.d(tag, colorPrimary + "");
             }
         } catch (Exception e) {
             colorPrimary = context.getResources().getColor(R.color.colorPrimary);
             e.printStackTrace();
         }
 
-        WeChatCaptureActivity.colorPrimary = colorPrimary;
+        WeChatCaptureActivity.colorPrimary = colorPrimary;//主题色
 
+
+        if (resultListener != null) {//结果监听器
+            WeChatCaptureActivity.resultListener = resultListener;
+        } else {
+            WeChatCaptureActivity.resultListener = null;
+        }
+
+        bitmap = null;
         try {
             context.startActivityForResult((new Intent()).setClass(context, WeChatCaptureActivity.class), 1001);
         } catch (Exception e) {
             e.printStackTrace();
+        }
 
-        }
-        if (resultListener != null) {
-            WeChatCaptureActivity.resultListener = resultListener;
-        }
     }
 
     @Override
@@ -96,7 +105,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             } else {
                 return;
             }
-            (new Thread(new Runnable() {
+            resultThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -113,11 +122,19 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                             return;
                         }
                     } catch (Exception e) {
+                        result = "无结果";
+                        WeChatCaptureActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                putResult(result);
+                            }
+                        });
                         e.printStackTrace();
                         Log.e(tag, e.getMessage());
                     }
                 }
-            })).start();
+            });
+            resultThread.start();
         }
     }
 
@@ -125,6 +142,9 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (checkSelfPermission(Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
+            toast("获取摄像头权限失败");
+        }
+        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
             toast("获取摄像头权限失败");
         }
     }
@@ -141,6 +161,9 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.CAMERA}, 101);
+            }
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 102);
             }
         }
 
@@ -207,7 +230,8 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             }
         });
         //获取最大变焦值
-        (new Handler()).postDelayed(new Runnable() {
+        handlerZoom = new Handler();
+        handlerZoom.postDelayed(new Runnable() {
             @Override
             public void run() {
                 runOnUiThread(new Runnable() {
@@ -223,7 +247,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                     }
                 });
             }
-        }, 50);
+        }, 100);
 
 
     }
@@ -232,6 +256,25 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     protected void onResume() {
         super.onResume();
         autoScannerView.setCameraManager(cameraManager);
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(tag, "回收内存");
+        colorPrimary = 0;
+        mSelect.setImageResource(0);
+
+        if(resultThread!=null){
+            resultThread=null;
+        }
+        if (handlerZoom != null) {
+            handlerZoom.removeCallbacksAndMessages(null);
+        }
+        handlerZoom = null;
+        System.gc();
+
+
+        super.onDestroy();
     }
 
     @Override
@@ -266,6 +309,15 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         if (resultListener != null) {
             resultListener.onResult(result);
         }
+        if (result != "无结果") {
+            finish();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
         finish();
+        Log.e(tag,"finish");
     }
 }
