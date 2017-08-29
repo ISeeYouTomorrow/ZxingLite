@@ -7,7 +7,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -17,19 +16,19 @@ import com.google.zxing.BinaryBitmap;
 import com.google.zxing.ChecksumException;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.FormatException;
+import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.activity.WeChatCaptureActivity;
 import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.multi.qrcode.QRCodeMultiReader;
 import com.google.zxing.qrcode.QRCodeReader;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -50,7 +49,7 @@ public class PicDecode {
         Hashtable<DecodeHintType, Object> hints = new Hashtable();
         hints.put(DecodeHintType.CHARACTER_SET, "UTF-8"); // 设置二维码内容的编码
         hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
-        hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
+//        hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
 
         try {
             scanBitmap = getBitmapFormUri(context, uri,0);
@@ -69,11 +68,6 @@ public class PicDecode {
 
         QRCodeReader reader = new QRCodeReader();
         Result result = null;
-
-//        if (true){
-//            result=backupDecode(context,uri,result);
-//            return result;
-//        }
 
         try {
             result = reader.decode(binaryBitmap1, hints);
@@ -110,8 +104,8 @@ public class PicDecode {
             hints.put(DecodeHintType.CHARACTER_SET, "UTF-8"); // 设置二维码内容的编码
             hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
             //复杂模式，开启PURE_BARCODE模式
-//            hints.put(DecodeHintType.PURE_BARCODE, Boolean.TRUE);
-            hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
+//            hints.put(DecodeHintType.PURE_BARCODE, Boolean.FALSE);
+//            hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
             try {
                 scanBitmap = getBitmapFormUri(context, uri,1);
 //                scanBitmap=decodeSampledBitmapFromFile(getRealFilePathFromUri(context,uri),1024,1024);
@@ -132,34 +126,20 @@ public class PicDecode {
                     height,
                     false);
             BinaryBitmap binaryBitmap2 = new BinaryBitmap(new HybridBinarizer(source2));
-            QRCodeReader reader = new QRCodeReader();
+            MultiFormatReader reader = new MultiFormatReader();
 //            scanBitmap.recycle();
-
             result = reader.decode(binaryBitmap2, hints);
             Log.e(tag,result.getText());
         } catch (NotFoundException e1) {
             Log.e(tag,"NotFoundException");
             e1.printStackTrace();
-
-        } catch (ChecksumException e1) {
-            Log.e(tag,"ChecksumException");
-            e1.printStackTrace();
-        } catch (FormatException e1) {
-            Log.e(tag,"FormatException");
+        } catch (Exception e1) {
+            Log.e(tag,"Exception");
             e1.printStackTrace();
         }
         return result;
     }
 
-//    public static byte[] getYUV420sp(int inputWidth, int inputHeight,
-//                                     Bitmap scaled) {
-//        int[] argb = new int[inputWidth * inputHeight];
-//        scaled.getPixels(argb, 0, inputWidth, 0, 0, inputWidth, inputHeight);
-//        byte[] yuv = new byte[inputWidth * inputHeight * 3 / 2];
-//        encodeYUV420SP(yuv, argb, inputWidth, inputHeight);
-//        scaled.recycle();
-//        return yuv;
-//    }
 
 
     private static void encodeYUV420SP(byte[] yuv420sp, int[] argb, int width,
@@ -202,12 +182,7 @@ public class PicDecode {
                 U = Math.max(0, Math.min(U, 255));
                 V = Math.max(0, Math.min(V, 255));
 
-                // NV21 has a plane of Y and interleaved planes of VU each
-                // sampled by a factor of 2
-                // meaning for every 4 Y pixels there are 1 V and 1 U. Note the
-                // sampling is every other
-                // pixel AND every other scanline.
-                // ---Y---
+
                 yuv420sp[yIndex++] = (byte) Y;
 
             }
@@ -219,50 +194,30 @@ public class PicDecode {
      *
      * @param uri
      */
-    public static Bitmap getBitmapFormUri(Activity ac, Uri uri,int i) throws IOException {
+    public static Bitmap getBitmapFormUri(Activity ac, Uri uri,int doCompress) throws IOException {
         int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
         Log.d(tag, "Max memory is " + maxMemory + "KB");
         String path=getRealFilePathFromUri(ac,uri);
+
+        Bitmap bitmap=null;
         int degree=PhotoBitmapUtils.readPictureDegree(path);
+        Log.d(tag,"degree "+degree);
+        int w=512;
+        int h=512;
+//        if(doCompress==2){
+//
+//        }
 
-        InputStream input = ac.getContentResolver().openInputStream(uri);
-
-        BitmapFactory.Options onlyBoundsOptions = new BitmapFactory.Options();
-        onlyBoundsOptions.inJustDecodeBounds = true;
-        onlyBoundsOptions.inDither = true;//optional
-        onlyBoundsOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;//optional
-        BitmapFactory.decodeStream(input, null, onlyBoundsOptions);
-        input.close();
-        int originalWidth = onlyBoundsOptions.outWidth;
-        int originalHeight = onlyBoundsOptions.outHeight;
-        if ((originalWidth == -1) || (originalHeight == -1))
+        try {
+            bitmap=decodeSampledBitmapFromFile(path,w,h);
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
-        float hh = 1080f;//这里设置高度
-        float ww = 1080f;//这里设置宽度
-        //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
-        int be = 1;//be=1表示不缩放
-        if (originalWidth > originalHeight && originalWidth > ww) {//如果宽度大的话根据宽度固定大小缩放
-            be = (int) (originalWidth / ww);
-        } else if (originalWidth < originalHeight && originalHeight > hh) {//如果高度高的话根据宽度固定大小缩放
-            be = (int) (originalHeight / hh);
         }
-        if (be <= 0)
-            be = 1;
-        Log.e(tag,"压缩比例be:"+be);
-        //比例压缩
-        BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-        bitmapOptions.inSampleSize = be;//设置缩放比例
-        bitmapOptions.inDither = true;//optional
-        bitmapOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;//optional
-        input = ac.getContentResolver().openInputStream(uri);
-        Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
-        input.close();
+         bitmap=PhotoBitmapUtils.rotaingImageView(degree,bitmap);
 
-        bitmap=PhotoBitmapUtils.rotaingImageView(degree,bitmap);
-        //bitmap=ThumbnailUtils.extractThumbnail(bitmap,512,512);
 
-        Log.d(tag," "+degree);
-        if (i==0) {
+        if (doCompress==0) {
             return bitmap;
         } else {
             return compressImage(bitmap);//再进行质量压缩
@@ -276,11 +231,12 @@ public class PicDecode {
      * @return
      */
     public static Bitmap compressImage(Bitmap image) {
-        Log.d(tag,"compressImage");
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
         int options = 100;
-        while (baos.toByteArray().length / 1024 > 100) {  //循环判断如果压缩后图片是否大于?kb,大于继续压缩
+        while (baos.toByteArray().length / 1024 > 200) {  //循环判断如果压缩后图片是否大于?kb,大于继续压缩
+            Log.d(tag,"compressImage "+options);
             baos.reset();//重置baos即清空baos
             //第一个参数 ：图片格式 ，第二个参数： 图片质量，100为最高，0为最差  ，第三个参数：保存压缩后的数据的流
             image.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中
@@ -399,6 +355,7 @@ public class PicDecode {
             while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
                 inSampleSize *= 2;
             }
+
         }
 
         return inSampleSize;
@@ -421,7 +378,8 @@ public class PicDecode {
 
         // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
+        Log.d(tag,"----------------------------------------");
+        Log.d(tag,"decodeSampledBitmapFromFile inSampleSize:"+options.inSampleSize);
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
         return BitmapFactory.decodeFile(imgPath, options);

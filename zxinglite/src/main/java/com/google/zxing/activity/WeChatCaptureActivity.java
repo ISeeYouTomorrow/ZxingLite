@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -40,8 +41,9 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     private static ResultListener resultListener;
     private static Handler handlerZoom;
     private static Thread resultThread;
+    private static int max=0;
     public static String result;
-
+    private Runnable getMaxZoomRunnable;
     private SurfaceView surfaceView;
     private AutoScannerView autoScannerView;
 
@@ -103,12 +105,15 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             if (uriTemp != null) {
                 uri = uriTemp;
             } else {
+
                 return;
             }
             resultThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        bitmap= MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+
                         result = PicDecode.scanImage(WeChatCaptureActivity.this, uri).getText();
 
                         if (!result.equals("")) {
@@ -221,7 +226,11 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                if(mSeekbar.getMax()==0){
+                    if(handlerZoom!=null){
+                        handlerZoom.postDelayed(getMaxZoomRunnable,10);
+                    }
+                }
             }
 
             @Override
@@ -230,16 +239,19 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             }
         });
         //获取最大变焦值
-        handlerZoom = new Handler();
-        handlerZoom.postDelayed(new Runnable() {
+        getMaxZoomRunnable=new Runnable() {
             @Override
             public void run() {
+                try {
+                    max = getCameraManager().getMaxZoom();
+                    Log.d("maxZoom", max + "");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            int max = getCameraManager().getMaxZoom();
-                            Log.d("maxZoom", max + "");
                             mSeekbar.setMax(max);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -247,7 +259,9 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                     }
                 });
             }
-        }, 100);
+        };
+        handlerZoom = new Handler();
+        handlerZoom.postDelayed(getMaxZoomRunnable, 100);
 
 
     }
