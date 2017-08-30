@@ -61,4 +61,7 @@ WeChatCaptureActivity.init(context, null, getResources().getColor(R.color.colorP
         }
     }
 ```
-
+## 效果图
+![](https://github.com/iamlocky/ZxingLite/blob/master/screenShots/Screenshot_2017-08-30-18-45-44-283_com.ygip.ipbas.png)
+![](https://github.com/iamlocky/ZxingLite/blob/master/screenShots/Screenshot_2017-08-30-18-46-24-274_com.ygip.ipbas.png)
+![](https://github.com/iamlocky/ZxingLite/blob/master/screenShots/Screenshot_2017-08-30-19-00-25-533_yangxixi.zxing.png)
