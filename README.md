@@ -22,13 +22,13 @@ compile ('com.github.iamlocky:ZxingLite:1.0.1',{
         exclude group: 'com.android.support', module:'appcompat-v7'
     })
 ```
-####manifests需要有三项权限
+#### manifests需要有三项权限
 ```java
 <uses-permission android:name="android.permission.CAMERA" />
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.VIBRATE" />
 ```
-####如果启动报错找不到activity则添加
+#### 如果启动报错找不到activity则添加
 ```java
 <activity
             android:name="com.google.zxing.activity.WeChatCaptureActivity"
@@ -36,9 +36,9 @@ compile ('com.github.iamlocky:ZxingLite:1.0.1',{
             android:launchMode="standard"
             />
 ```
-####准备工作做完了（注意高版本要动态申请权限）
-##开始使用
-####直接用ResultListener
+#### 准备工作做完了（注意高版本要动态申请权限）
+## 开始使用
+#### 直接用ResultListener
 ```java
 WeChatCaptureActivity.init(context, new ResultListener() {
             @Override
@@ -47,7 +47,7 @@ WeChatCaptureActivity.init(context, new ResultListener() {
             }
         }, getResources().getColor(R.color.colorPrimary), "二维码扫描");
 ```
-####或者第二个参数传null，直接用onActivityResult
+#### 或者第二个参数传null，直接用onActivityResult
 ```java
 WeChatCaptureActivity.init(context, null, getResources().getColor(R.color.colorPrimary), "二维码扫描2");
 ```
