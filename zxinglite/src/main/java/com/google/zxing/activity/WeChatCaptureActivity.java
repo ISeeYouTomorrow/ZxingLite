@@ -1,7 +1,9 @@
 package com.google.zxing.activity;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.usage.UsageEvents;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -11,6 +13,7 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 
@@ -41,7 +44,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     private static ResultListener resultListener;
     private static Handler handlerZoom;
     private static Thread resultThread;
-    private static int max=0;
+    private static int max = 0;
     public static String result;
     private Runnable getMaxZoomRunnable;
     private SurfaceView surfaceView;
@@ -112,7 +115,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                 @Override
                 public void run() {
                     try {
-                        bitmap= MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
 
                         result = PicDecode.scanImage(WeChatCaptureActivity.this, uri).getText();
 
@@ -143,6 +146,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     @Override//检查摄像头权限
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -150,7 +154,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             toast("获取摄像头权限失败");
         }
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
-            toast("获取摄像头权限失败");
+            toast("获取内部存储权限失败");
         }
     }
 
@@ -186,6 +190,16 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         mSelect.setBackgroundColor(colorPrimary);
         //---------------------------
         mTitle.setText(title);
+        //---------------------------
+        surfaceView.setOnTouchListener(new View.OnTouchListener() {//触摸对焦
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    getCameraManager().focus();
+                }
+                return false;
+            }
+        });
 
         lRight.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -226,9 +240,9 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                if(mSeekbar.getMax()==0){
-                    if(handlerZoom!=null){
-                        handlerZoom.postDelayed(getMaxZoomRunnable,10);
+                if (mSeekbar.getMax() == 0) {
+                    if (handlerZoom != null) {
+                        handlerZoom.postDelayed(getMaxZoomRunnable, 10);
                     }
                 }
             }
@@ -239,7 +253,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             }
         });
         //获取最大变焦值
-        getMaxZoomRunnable=new Runnable() {
+        getMaxZoomRunnable = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -278,8 +292,8 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         colorPrimary = 0;
         mSelect.setImageResource(0);
 
-        if(resultThread!=null){
-            resultThread=null;
+        if (resultThread != null) {
+            resultThread = null;
         }
         if (handlerZoom != null) {
             handlerZoom.removeCallbacksAndMessages(null);
@@ -299,6 +313,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     @Override
     public void dealDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
         result = rawResult.getText();
+        bitmap=null;
         putResult(result);
 //        对此次扫描结果不满意可以调用
 //        reScan();
@@ -306,7 +321,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     private void selectPic() {//选择本地二维码
         Intent innerIntent = new Intent();
-        if (Build.VERSION.SDK_INT < 19) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             innerIntent.setAction(Intent.ACTION_GET_CONTENT);
         } else {
             innerIntent.setAction(Intent.ACTION_PICK);
@@ -318,20 +333,29 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     private void putResult(String result) {//返回扫描结果
         intent.putExtra("result", result);
-        playBeepSoundAndVibrate(true, true);
+        playBeepSoundAndVibrate();
         setResult(1001, intent);//返回string结果
         if (resultListener != null) {
             resultListener.onResult(result);
         }
         if (result != "无结果") {
-            finish();
+            delayFinish(100);
         }
+    }
+
+
+    private void delayFinish(long time) {
+        (new Handler()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, time);
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         finish();
-        Log.e(tag,"finish");
     }
 }

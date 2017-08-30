@@ -378,6 +378,18 @@ public final class CameraManager {
         return max;
     }
 
+
+    /**
+     * 触摸对焦
+     */
+    public synchronized void focus(){
+        try {
+            camera.getCamera().autoFocus(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 变焦
      * @return

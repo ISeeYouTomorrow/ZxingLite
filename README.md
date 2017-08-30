@@ -1,4 +1,2 @@
-# ZxingLite
-Android二维码（仿微信，轻量Zxing）
-
-详细用法见：http://www.jianshu.com/p/168bef5526ae
+# 基于zxing的仿微信二维码扫描界面
+## 本项目fork自yangxixi88/ZxingLite，在原项目基础上添加了本地图片识别和闪光灯
