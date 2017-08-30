@@ -1,2 +1,17 @@
 
 .DS_Store
+/ZxingLibDemo.iml
+.gradle/
+.idea/compiler.xml
+.idea/copyright/
+.idea/gradle.xml
+.idea/libraries/compressor_2_1_0.xml
+.idea/libraries/reactive_streams_1_0_0.xml
+.idea/libraries/rxjava_2_1_0.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/runConfigurations.xml
+.idea/vcs.xml
+.idea/workspace.xml
+ZxingLite.iml
+build/
