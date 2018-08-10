@@ -23,7 +23,6 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.activity.WeChatCaptureActivity;
 import com.google.zxing.common.HybridBinarizer;
-import com.google.zxing.multi.qrcode.QRCodeMultiReader;
 import com.google.zxing.qrcode.QRCodeReader;
 
 import java.io.ByteArrayInputStream;
@@ -37,12 +36,12 @@ import java.util.Hashtable;
  */
 
 public class PicDecode {
-    private static final String tag = "PicDecode";
+    private static final String TAG = "PicDecode";
     private static byte[] yuvs;
 
-    public static Result scanImage(Activity context, Uri uri) {
+    public static Result scanImage(WeChatCaptureActivity context, Uri uri) {
         if (uri == null) {
-            Log.e(tag, "null");
+            Log.e(TAG, "scanImage: uri is null");
             return null;
         }
         Bitmap scanBitmap;
@@ -53,10 +52,10 @@ public class PicDecode {
 
         try {
             scanBitmap = getBitmapFormUri(context, uri, 0);
-            WeChatCaptureActivity.bitmap = scanBitmap;
+            context.setBitmap(scanBitmap);
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e(tag, e.getMessage());
+            Log.e(TAG, e.getMessage());
             return null;
         }
         int width = scanBitmap.getWidth();
@@ -71,34 +70,33 @@ public class PicDecode {
 
         try {
             result = reader.decode(binaryBitmap1, hints);
-            Log.e(tag, result.getText());
+            Log.e(TAG, result.getText());
         } catch (NotFoundException e) {
-            Log.e(tag, "NotFoundException");
+            Log.e(TAG, "NotFoundException");
             result = backupDecode(context, uri, result);
             e.printStackTrace();
         } catch (ChecksumException e) {
-            Log.e(tag, "ChecksumException");
+            Log.e(TAG, "ChecksumException");
             result = backupDecode(context, uri, result);
             e.printStackTrace();
         } catch (FormatException e) {
-            Log.e(tag, "FormatException");
+            Log.e(TAG, "FormatException");
             result = backupDecode(context, uri, result);
             e.printStackTrace();
         } catch (Exception e) {
-            Log.e(tag, e.getMessage());
+            Log.e(TAG, e.getMessage());
             result = backupDecode(context, uri, result);
             e.printStackTrace();
         }
-//        scanBitmap.recycle();
         return result;
     }
 
-    public static Result backupDecode(Activity context, Uri uri, Result result) {
+    public static Result backupDecode(WeChatCaptureActivity context, Uri uri, Result result) {
 
         try {
             result = null;
             //备用方案
-            Log.e(tag, "备用方案");
+            Log.e(TAG, "调用备用方案");
             Bitmap scanBitmap;
             Hashtable<DecodeHintType, Object> hints = new Hashtable();
             hints.put(DecodeHintType.CHARACTER_SET, "UTF-8"); // 设置二维码内容的编码
@@ -109,10 +107,10 @@ public class PicDecode {
             try {
                 scanBitmap = getBitmapFormUri(context, uri, 1);
 //                scanBitmap=decodeSampledBitmapFromFile(getRealFilePathFromUri(context,uri),1024,1024);
-                WeChatCaptureActivity.bitmap = scanBitmap;
+                context.setBitmap(scanBitmap);
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e(tag, e.getMessage());
+                Log.e(TAG, e.getMessage());
                 return null;
             }
             int width = scanBitmap.getWidth();
@@ -129,12 +127,12 @@ public class PicDecode {
             MultiFormatReader reader = new MultiFormatReader();
 //            scanBitmap.recycle();
             result = reader.decode(binaryBitmap2, hints);
-            Log.e(tag, result.getText());
+            Log.e(TAG, result.getText());
         } catch (NotFoundException e1) {
-            Log.e(tag, "NotFoundException");
+            Log.e(TAG, "NotFoundException");
             e1.printStackTrace();
         } catch (Exception e1) {
-            Log.e(tag, "Exception");
+            Log.e(TAG, "Exception");
             e1.printStackTrace();
         }
         return result;
@@ -195,12 +193,12 @@ public class PicDecode {
      */
     public static Bitmap getBitmapFormUri(Activity ac, Uri uri, int doCompress) throws IOException {
         int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        Log.d(tag, "Max memory is " + maxMemory + "KB");
+        Log.d(TAG, "Max memory is " + maxMemory + "KB");
         String path = getRealFilePathFromUri(ac, uri);
 
         Bitmap bitmap = null;
         int degree = PhotoBitmapUtils.readPictureDegree(path);
-        Log.d(tag, "degree " + degree);
+        Log.d(TAG, "degree " + degree);
         int w = 512;
         int h = 512;
 
@@ -232,7 +230,7 @@ public class PicDecode {
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
         int options = 100;
         while (baos.toByteArray().length / 1024 > 200) {  //循环判断如果压缩后图片是否大于?kb,大于继续压缩
-            Log.d(tag, "compressImage " + options);
+            Log.d(TAG, "compressImage " + options);
             baos.reset();//重置baos即清空baos
             //第一个参数 ：图片格式 ，第二个参数： 图片质量，100为最高，0为最差  ，第三个参数：保存压缩后的数据的流
             image.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中
@@ -374,8 +372,8 @@ public class PicDecode {
 
         // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-        Log.d(tag, "----------------------------------------");
-        Log.d(tag, "decodeSampledBitmapFromFile inSampleSize:" + options.inSampleSize);
+        Log.d(TAG, "----------------------------------------");
+        Log.d(TAG, "decodeSampledBitmapFromFile inSampleSize:" + options.inSampleSize);
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
         return BitmapFactory.decodeFile(imgPath, options);

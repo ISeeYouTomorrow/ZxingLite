@@ -1,6 +1,7 @@
 package yangxixi.zxinglib;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,11 +19,13 @@ import com.google.zxing.activity.DefaultCaptureActivity;
 public class MainActivity extends AppCompatActivity implements ResultListener {
     EditText editText;
     ImageView imageView;
+    private static final String TAG = "MainActivity";
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         //法一
-        if (requestCode == 1001) {
+        if (requestCode == WeChatCaptureActivity.scan_requestCode) {
             try {
                 if (data != null) {
                     String result = data.getStringExtra("result");
@@ -33,15 +36,14 @@ public class MainActivity extends AppCompatActivity implements ResultListener {
                 e.printStackTrace();
                 Log.e("main", e.getMessage().toString());
             }
-            try {
-                if(WeChatCaptureActivity.bitmap!=null&&!WeChatCaptureActivity.bitmap.isRecycled()){
-                    imageView.setImageBitmap(WeChatCaptureActivity.bitmap);
-
+            try {//通过Parcelable传递识别成功的图像
+                Bundle bundle = data.getExtras();
+                if (bundle != null) {
+                    Bitmap bitmap = bundle.getParcelable("bitmap");
+                    imageView.setImageBitmap(bitmap);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-            }finally {
-                WeChatCaptureActivity.bitmap=null;
             }
         }
     }
@@ -55,8 +57,8 @@ public class MainActivity extends AppCompatActivity implements ResultListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imageView=(ImageView) findViewById(R.id.imageview);
-        editText = (EditText) findViewById(R.id.print_text);
+        imageView = findViewById(R.id.imageview);
+        editText = findViewById(R.id.print_text);
         editText.setSelectAllOnFocus(true);
         editText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements ResultListener {
             }
         });
 
-        Button defaultStart = (Button) findViewById(R.id.default_start);
+        Button defaultStart = findViewById(R.id.default_start);
         defaultStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements ResultListener {
             }
         });
 
-        Button weStart = (Button) findViewById(R.id.wechat_start);
+        Button weStart = findViewById(R.id.wechat_start);
         weStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

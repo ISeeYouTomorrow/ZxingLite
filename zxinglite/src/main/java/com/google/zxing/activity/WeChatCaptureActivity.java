@@ -28,6 +28,7 @@ import com.google.zxing.Result;
 import com.google.zxing.client.android.AutoScannerView;
 import com.google.zxing.client.android.BaseCaptureActivity;
 import com.google.zxing.listener.ResultListener;
+import com.google.zxing.utils.PhotoBitmapUtils;
 import com.google.zxing.utils.PicDecode;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -37,14 +38,16 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
  */
 public class WeChatCaptureActivity extends BaseCaptureActivity {
     private static final String TAG = "WeChatCaptureActivity";
-    public static Bitmap bitmap = null;
+    private static final int select_requestCode = 0xb002;
+    public static final int scan_requestCode = 0xb001;
+    public Bitmap bitmap = null;
     private static int colorPrimary = 0;
     private static String title = "";
     private static ResultListener resultListener;
-    private static Handler handlerZoom;
-    private static Thread resultThread;
+    private Handler handlerZoom;
+    private Thread resultThread;
     private static int max = 0;
-    public static String result;
+    public String result;
     private Runnable getMaxZoomRunnable;
     private SurfaceView surfaceView;
     private AutoScannerView autoScannerView;
@@ -61,7 +64,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     public static void init(@NonNull Activity context, ResultListener resultListener, int colorPrimary, @NonNull String title) {
         try {//检查颜色是否为0
-            title=context.getString(R.string.default_title);
+            title = context.getString(R.string.default_title);
             if (!TextUtils.isEmpty(title)) {
                 WeChatCaptureActivity.title = title;
             }
@@ -83,9 +86,8 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             WeChatCaptureActivity.resultListener = null;
         }
 
-        bitmap = null;
         try {
-            context.startActivityForResult((new Intent()).setClass(context, WeChatCaptureActivity.class), 1001);
+            context.startActivityForResult((new Intent()).setClass(context, WeChatCaptureActivity.class), scan_requestCode);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -117,8 +119,8 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
                         result = PicDecode.scanImage(WeChatCaptureActivity.this, uri).getText();
 
-                        if (!result.equals("")) {
-                            WeChatCaptureActivity.this.runOnUiThread(new Runnable() {
+                        if (!TextUtils.isEmpty(result)) {
+                            surfaceView.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     putResult(result);
@@ -158,6 +160,10 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     void toast(String s) {
         Toast.makeText(WeChatCaptureActivity.this, s, Toast.LENGTH_SHORT).show();
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
     }
 
     @Override
@@ -291,8 +297,10 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             handlerZoom.removeCallbacksAndMessages(null);
         }
         handlerZoom = null;
-        System.gc();
-
+        resultListener = null;
+//        if (bitmap!=null&&!bitmap.isRecycled()) {
+//            bitmap.recycle();
+//        }
 
         super.onDestroy();
     }
@@ -319,13 +327,19 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         }
         innerIntent.setType("image/*");
         Intent wrapperIntent = Intent.createChooser(innerIntent, getString(R.string.choose_qrcode));
-        startActivityForResult(wrapperIntent, 1002);
+        startActivityForResult(wrapperIntent, select_requestCode);
     }
 
     private void putResult(String result) {//返回扫描结果
         intent.putExtra("result", result);
+        Bundle bundle=new Bundle();
+        Float scale=200f/(float)bitmap.getWidth();
+        bitmap= PhotoBitmapUtils.getScaleBitmap(bitmap,scale);
+
+        bundle.putParcelable("bitmap",bitmap);
+        intent.putExtras(bundle);
         playBeepSoundAndVibrate(true, true);
-        setResult(1001, intent);//返回string结果
+        setResult(RESULT_OK, intent);//返回string结果
         if (resultListener != null) {
             resultListener.onResult(result);
         }
@@ -333,6 +347,8 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             finish();
         }
     }
+
+
 
     @Override
     public void onBackPressed() {

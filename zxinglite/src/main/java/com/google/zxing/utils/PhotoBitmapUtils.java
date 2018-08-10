@@ -77,6 +77,17 @@ public class PhotoBitmapUtils {
         return file + photoName;
     }
 
+    public static Bitmap getScaleBitmap(Bitmap bitmap,float scale){
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+
+        Matrix matrix = new Matrix();
+        matrix.postScale(scale, scale);
+        Bitmap newbm = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix,true);
+        return newbm;
+    }
+
     /**
      * 保存Bitmap图片在SD卡中
      * 如果没有SD卡则存在手机中
@@ -137,7 +148,7 @@ public class PhotoBitmapUtils {
         int angle = readPictureDegree(originpath);
 
         // 把原图压缩后得到Bitmap对象
-        Bitmap bmp = getCompressPhoto(originpath);;
+        Bitmap bmp = getCompressPhoto(originpath);
 
         // 修复图片被旋转的角度
         Bitmap bitmap = rotaingImageView(angle, bmp);
