@@ -1,16 +1,15 @@
-package yangxixi.zxinglib.activity;
+package com.google.zxing.activity;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.SurfaceView;
-import android.widget.Toast;
 
+import com.google.zxing.R;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.BaseCaptureActivity;
 import com.google.zxing.client.android.ViewfinderView;
 
-import yangxixi.zxinglib.R;
 
 /**
  * 默认的扫描界面
@@ -42,9 +41,11 @@ public class DefaultCaptureActivity extends BaseCaptureActivity {
 
     @Override
     public void dealDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
-        Log.i(TAG, "dealDecode ~~~~~ " + rawResult.getText() + " " + barcode + " " + scaleFactor);
-        playBeepSoundAndVibrate();
-        Toast.makeText(this, rawResult.getText(), Toast.LENGTH_LONG).show();
+        Intent intent=new Intent();
+        intent.putExtra("result", rawResult.toString());
+        playBeepSoundAndVibrate(true, true);
+        setResult(1001, intent);//返回string结果
+
 //        对此次扫描结果不满意可以调用
 //        reScan();
     }

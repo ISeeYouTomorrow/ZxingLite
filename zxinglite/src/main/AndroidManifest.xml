@@ -7,6 +7,10 @@
     <application android:allowBackup="true" android:label="@string/app_name"
         android:supportsRtl="true">
         <activity
+            android:name=".activity.DefaultCaptureActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name="com.google.zxing.activity.WeChatCaptureActivity"
             android:screenOrientation="portrait"
             android:launchMode="standard"

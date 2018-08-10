@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
@@ -35,14 +36,14 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
  * 模仿微信的扫描界面
  */
 public class WeChatCaptureActivity extends BaseCaptureActivity {
+    private static final String TAG = "WeChatCaptureActivity";
     public static Bitmap bitmap = null;
-    private static final String tag = "WeChatCaptureActivity";
     private static int colorPrimary = 0;
-    private static String title = "二维码扫描";
+    private static String title = "";
     private static ResultListener resultListener;
     private static Handler handlerZoom;
     private static Thread resultThread;
-    private static int max=0;
+    private static int max = 0;
     public static String result;
     private Runnable getMaxZoomRunnable;
     private SurfaceView surfaceView;
@@ -60,13 +61,13 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     public static void init(@NonNull Activity context, ResultListener resultListener, int colorPrimary, @NonNull String title) {
         try {//检查颜色是否为0
-            if (!title.equals("")) {
+            title=context.getString(R.string.default_title);
+            if (!TextUtils.isEmpty(title)) {
                 WeChatCaptureActivity.title = title;
             }
             if (colorPrimary == 0) {
                 colorPrimary = context.getResources().getColor(R.color.colorPrimary);
             } else {
-                Log.d(tag, colorPrimary + "");
             }
         } catch (Exception e) {
             colorPrimary = context.getResources().getColor(R.color.colorPrimary);
@@ -99,7 +100,6 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         if (resultCode == RESULT_OK) {//识别返回的本地二维码图片
             try {
                 uriTemp = data.getData();
-                Log.e(tag, resultCode + "onActivityResult " + uriTemp.getPath());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -113,7 +113,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                 @Override
                 public void run() {
                     try {
-                        bitmap= MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
 
                         result = PicDecode.scanImage(WeChatCaptureActivity.this, uri).getText();
 
@@ -128,15 +128,14 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                             return;
                         }
                     } catch (Exception e) {
-                        result = "无结果";
-                        WeChatCaptureActivity.this.runOnUiThread(new Runnable() {
+                        result = getString(R.string.no_result);
+                        surfaceView.post(new Runnable() {
                             @Override
                             public void run() {
                                 putResult(result);
                             }
                         });
                         e.printStackTrace();
-                        Log.e(tag, e.getMessage());
                     }
                 }
             });
@@ -150,10 +149,10 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (checkSelfPermission(Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
-            toast("获取摄像头权限失败");
+            toast(getString(R.string.get_camera_fail));
         }
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
-            toast("获取摄像头权限失败");
+            toast(getString(R.string.get_sd_fail));
         }
     }
 
@@ -229,9 +228,9 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                if(mSeekbar.getMax()==0){
-                    if(handlerZoom!=null){
-                        handlerZoom.postDelayed(getMaxZoomRunnable,10);
+                if (mSeekbar.getMax() == 0) {
+                    if (handlerZoom != null) {
+                        handlerZoom.postDelayed(getMaxZoomRunnable, 10);
                     }
                 }
             }
@@ -242,7 +241,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             }
         });
         //获取最大变焦值
-        getMaxZoomRunnable=new Runnable() {
+        getMaxZoomRunnable = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -277,12 +276,16 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     @Override
     protected void onDestroy() {
-        Log.d(tag, "回收内存");
         colorPrimary = 0;
         mSelect.setImageResource(0);
 
-        if(resultThread!=null){
-            resultThread=null;
+        if (resultThread != null && resultThread.isAlive()) {
+            try {
+                resultThread.interrupt();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            resultThread = null;
         }
         if (handlerZoom != null) {
             handlerZoom.removeCallbacksAndMessages(null);
@@ -326,7 +329,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         if (resultListener != null) {
             resultListener.onResult(result);
         }
-        if (result != "无结果") {
+        if (result != getString(R.string.no_result)) {
             finish();
         }
     }
@@ -334,7 +337,5 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        finish();
-        Log.e(tag,"finish");
     }
 }

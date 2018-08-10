@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,7 +13,7 @@ import android.widget.Toast;
 import com.google.zxing.activity.WeChatCaptureActivity;
 import com.google.zxing.listener.ResultListener;
 
-import yangxixi.zxinglib.activity.DefaultCaptureActivity;
+import com.google.zxing.activity.DefaultCaptureActivity;
 
 public class MainActivity extends AppCompatActivity implements ResultListener {
     EditText editText;

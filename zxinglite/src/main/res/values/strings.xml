@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">ZxingLite</string>
     <string name="choose_qrcode">选择二维码图片</string>
+    <string name="no_result">无结果</string>
+    <string name="default_title">二维码扫描</string>
+    <string name="get_camera_fail">获取摄像头权限失败</string>
+    <string name="get_sd_fail">获取sd权限失败</string>
 </resources>
