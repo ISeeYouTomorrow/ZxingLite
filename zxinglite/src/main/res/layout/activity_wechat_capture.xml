@@ -3,8 +3,7 @@
     android:id="@+id/activity_wechat_capture"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <include layout="@layout/zxing_titlebar"></include>
 
@@ -12,15 +11,12 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        >
+        android:layout_weight="1">
 
         <SurfaceView
             android:id="@+id/preview_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-
-
 
 
         <com.google.zxing.client.android.AutoScannerView
@@ -29,15 +25,57 @@
             android:layout_height="match_parent" />
 
 
-        <SeekBar
-            android:id="@+id/zoom_seekbar"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="70dp"
             android:layout_marginLeft="50dp"
             android:layout_marginRight="50dp"
-            android:max="1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:gravity="bottom"
+            android:orientation="vertical">
+
+            <SeekBar
+                android:id="@+id/zoom_seekbar"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="1" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="50dp"
+                android:alpha="0.6"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:text="近"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="变焦"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:text="远"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp" />
+
+            </RelativeLayout>
+
+
+        </LinearLayout>
 
 
     </RelativeLayout>

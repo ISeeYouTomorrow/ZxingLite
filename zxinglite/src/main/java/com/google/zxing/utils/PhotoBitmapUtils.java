@@ -203,15 +203,14 @@ public class PhotoBitmapUtils {
      * 通过内容提供器来获取图片缩略图
      缺点:必须更新媒体库才能看到最新的缩略图
      * @param context
-     * @param cr
      * @param Imagepath
      * @return
      */
-    public static Bitmap getImageThumbnail(Context context, ContentResolver cr, String Imagepath) {
-        ContentResolver testcr = context.getContentResolver();
+    public static Bitmap getImageThumbnail(Context context, String Imagepath) {
+        ContentResolver cr = context.getContentResolver();
         String[] projection = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID, };
         String whereClause = MediaStore.Images.Media.DATA + " = '" + Imagepath + "'";
-        Cursor cursor = testcr.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, whereClause,null, null);
+        Cursor cursor = cr.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, whereClause,null, null);
         int _id = 0;
         String imagePath = "";
         if (cursor == null || cursor.getCount() == 0) {

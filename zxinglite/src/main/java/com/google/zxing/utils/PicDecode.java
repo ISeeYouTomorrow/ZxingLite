@@ -37,9 +37,9 @@ import java.util.Hashtable;
  */
 
 public class PicDecode {
-//    private static Bitmap scanBitmap;
     private static final String tag = "PicDecode";
     private static byte[] yuvs;
+
     public static Result scanImage(Activity context, Uri uri) {
         if (uri == null) {
             Log.e(tag, "null");
@@ -49,11 +49,11 @@ public class PicDecode {
         Hashtable<DecodeHintType, Object> hints = new Hashtable();
         hints.put(DecodeHintType.CHARACTER_SET, "UTF-8"); // 设置二维码内容的编码
         hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
-//        hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
+        hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
 
         try {
-            scanBitmap = getBitmapFormUri(context, uri,0);
-            WeChatCaptureActivity.bitmap=scanBitmap;
+            scanBitmap = getBitmapFormUri(context, uri, 0);
+            WeChatCaptureActivity.bitmap = scanBitmap;
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(tag, e.getMessage());
@@ -71,32 +71,32 @@ public class PicDecode {
 
         try {
             result = reader.decode(binaryBitmap1, hints);
-            Log.e(tag,result.getText());
+            Log.e(tag, result.getText());
         } catch (NotFoundException e) {
             Log.e(tag, "NotFoundException");
-            result=backupDecode(context,uri,result);
+            result = backupDecode(context, uri, result);
             e.printStackTrace();
         } catch (ChecksumException e) {
-            Log.e(tag,"ChecksumException");
-            result=backupDecode(context,uri,result);
+            Log.e(tag, "ChecksumException");
+            result = backupDecode(context, uri, result);
             e.printStackTrace();
         } catch (FormatException e) {
-            Log.e(tag,"FormatException");
-            result=backupDecode(context,uri,result);
+            Log.e(tag, "FormatException");
+            result = backupDecode(context, uri, result);
             e.printStackTrace();
         } catch (Exception e) {
-            Log.e(tag,e.getMessage());
-            result=backupDecode(context,uri,result);
+            Log.e(tag, e.getMessage());
+            result = backupDecode(context, uri, result);
             e.printStackTrace();
         }
 //        scanBitmap.recycle();
         return result;
     }
 
-    public static Result backupDecode(Activity context,Uri uri,Result result){
+    public static Result backupDecode(Activity context, Uri uri, Result result) {
 
         try {
-            result=null;
+            result = null;
             //备用方案
             Log.e(tag, "备用方案");
             Bitmap scanBitmap;
@@ -107,17 +107,17 @@ public class PicDecode {
 //            hints.put(DecodeHintType.PURE_BARCODE, Boolean.FALSE);
 //            hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
             try {
-                scanBitmap = getBitmapFormUri(context, uri,1);
+                scanBitmap = getBitmapFormUri(context, uri, 1);
 //                scanBitmap=decodeSampledBitmapFromFile(getRealFilePathFromUri(context,uri),1024,1024);
-                WeChatCaptureActivity.bitmap=scanBitmap;
+                WeChatCaptureActivity.bitmap = scanBitmap;
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e(tag, e.getMessage());
                 return null;
             }
-            int width=scanBitmap.getWidth();
-            int height=scanBitmap.getHeight();
-            byte[] dataYUV = getYUV420sp(width,height, scanBitmap);
+            int width = scanBitmap.getWidth();
+            int height = scanBitmap.getHeight();
+            byte[] dataYUV = getYUV420sp(width, height, scanBitmap);
             PlanarYUVLuminanceSource source2 = new PlanarYUVLuminanceSource(dataYUV,
                     width,
                     height,
@@ -129,17 +129,16 @@ public class PicDecode {
             MultiFormatReader reader = new MultiFormatReader();
 //            scanBitmap.recycle();
             result = reader.decode(binaryBitmap2, hints);
-            Log.e(tag,result.getText());
+            Log.e(tag, result.getText());
         } catch (NotFoundException e1) {
-            Log.e(tag,"NotFoundException");
+            Log.e(tag, "NotFoundException");
             e1.printStackTrace();
         } catch (Exception e1) {
-            Log.e(tag,"Exception");
+            Log.e(tag, "Exception");
             e1.printStackTrace();
         }
         return result;
     }
-
 
 
     private static void encodeYUV420SP(byte[] yuv420sp, int[] argb, int width,
@@ -194,30 +193,27 @@ public class PicDecode {
      *
      * @param uri
      */
-    public static Bitmap getBitmapFormUri(Activity ac, Uri uri,int doCompress) throws IOException {
+    public static Bitmap getBitmapFormUri(Activity ac, Uri uri, int doCompress) throws IOException {
         int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
         Log.d(tag, "Max memory is " + maxMemory + "KB");
-        String path=getRealFilePathFromUri(ac,uri);
+        String path = getRealFilePathFromUri(ac, uri);
 
-        Bitmap bitmap=null;
-        int degree=PhotoBitmapUtils.readPictureDegree(path);
-        Log.d(tag,"degree "+degree);
-        int w=512;
-        int h=512;
-//        if(doCompress==2){
-//
-//        }
+        Bitmap bitmap = null;
+        int degree = PhotoBitmapUtils.readPictureDegree(path);
+        Log.d(tag, "degree " + degree);
+        int w = 512;
+        int h = 512;
 
         try {
-            bitmap=decodeSampledBitmapFromFile(path,w,h);
+            bitmap = decodeSampledBitmapFromFile(path, w, h);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-         bitmap=PhotoBitmapUtils.rotaingImageView(degree,bitmap);
+        bitmap = PhotoBitmapUtils.rotaingImageView(degree, bitmap);
 
 
-        if (doCompress==0) {
+        if (doCompress == 0) {
             return bitmap;
         } else {
             return compressImage(bitmap);//再进行质量压缩
@@ -236,7 +232,7 @@ public class PicDecode {
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
         int options = 100;
         while (baos.toByteArray().length / 1024 > 200) {  //循环判断如果压缩后图片是否大于?kb,大于继续压缩
-            Log.d(tag,"compressImage "+options);
+            Log.d(tag, "compressImage " + options);
             baos.reset();//重置baos即清空baos
             //第一个参数 ：图片格式 ，第二个参数： 图片质量，100为最高，0为最差  ，第三个参数：保存压缩后的数据的流
             image.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中
@@ -281,21 +277,21 @@ public class PicDecode {
      * @param uri
      * @return the file path or null
      */
-    public static String getRealFilePathFromUri( final Context context, final Uri uri ) {
-        if ( null == uri ) return null;
+    public static String getRealFilePathFromUri(final Context context, final Uri uri) {
+        if (null == uri) return null;
         final String scheme = uri.getScheme();
         String data = null;
-        if ( scheme == null )
+        if (scheme == null)
             data = uri.getPath();
-        else if ( ContentResolver.SCHEME_FILE.equals( scheme ) ) {
+        else if (ContentResolver.SCHEME_FILE.equals(scheme)) {
             data = uri.getPath();
-        } else if ( ContentResolver.SCHEME_CONTENT.equals( scheme ) ) {
-            Cursor cursor = context.getContentResolver().query( uri, new String[] { MediaStore.Images.ImageColumns.DATA }, null, null, null );
-            if ( null != cursor ) {
-                if ( cursor.moveToFirst() ) {
-                    int index = cursor.getColumnIndex( MediaStore.Images.ImageColumns.DATA );
-                    if ( index > -1 ) {
-                        data = cursor.getString( index );
+        } else if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
+            Cursor cursor = context.getContentResolver().query(uri, new String[]{MediaStore.Images.ImageColumns.DATA}, null, null, null);
+            if (null != cursor) {
+                if (cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+                    if (index > -1) {
+                        data = cursor.getString(index);
                     }
                 }
                 cursor.close();
@@ -307,9 +303,9 @@ public class PicDecode {
     /**
      * 根据Bitmap的ARGB值生成YUV420SP数据。
      *
-     * @param inputWidth image width
+     * @param inputWidth  image width
      * @param inputHeight image height
-     * @param scaled bmp
+     * @param scaled      bmp
      * @return YUV420SP数组
      */
     public static byte[] getYUV420sp(int inputWidth, int inputHeight, Bitmap scaled) {
@@ -334,8 +330,8 @@ public class PicDecode {
     /**
      * 根据给定的宽度和高度动态计算图片压缩比率
      *
-     * @param options Bitmap配置文件
-     * @param reqWidth 需要压缩到的宽度
+     * @param options   Bitmap配置文件
+     * @param reqWidth  需要压缩到的宽度
      * @param reqHeight 需要压缩到的高度
      * @return 压缩比
      */
@@ -364,8 +360,8 @@ public class PicDecode {
     /**
      * 将图片根据压缩比压缩成固定宽高的Bitmap，实际解析的图片大小可能和#reqWidth、#reqHeight不一样。
      *
-     * @param imgPath 图片地址
-     * @param reqWidth 需要压缩到的宽度
+     * @param imgPath   图片地址
+     * @param reqWidth  需要压缩到的宽度
      * @param reqHeight 需要压缩到的高度
      * @return Bitmap
      */
@@ -378,8 +374,8 @@ public class PicDecode {
 
         // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-        Log.d(tag,"----------------------------------------");
-        Log.d(tag,"decodeSampledBitmapFromFile inSampleSize:"+options.inSampleSize);
+        Log.d(tag, "----------------------------------------");
+        Log.d(tag, "decodeSampledBitmapFromFile inSampleSize:" + options.inSampleSize);
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
         return BitmapFactory.decodeFile(imgPath, options);
