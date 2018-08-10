@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ZxingLite</string>
+    <string name="choose_qrcode">选择二维码图片</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.google.zxing.activity;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -143,6 +144,8 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         }
     }
 
+
+    @TargetApi(Build.VERSION_CODES.M)
     @Override//检查摄像头权限
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -312,7 +315,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             innerIntent.setAction(Intent.ACTION_PICK);
         }
         innerIntent.setType("image/*");
-        Intent wrapperIntent = Intent.createChooser(innerIntent, "选择二维码图片");
+        Intent wrapperIntent = Intent.createChooser(innerIntent, getString(R.string.choose_qrcode));
         startActivityForResult(wrapperIntent, 1002);
     }
 
