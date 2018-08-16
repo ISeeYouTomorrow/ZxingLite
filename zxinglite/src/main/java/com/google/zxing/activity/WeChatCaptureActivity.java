@@ -298,9 +298,6 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         }
         handlerZoom = null;
         resultListener = null;
-//        if (bitmap!=null&&!bitmap.isRecycled()) {
-//            bitmap.recycle();
-//        }
 
         super.onDestroy();
     }
@@ -313,7 +310,9 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     @Override
     public void dealDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
         result = rawResult.getText();
+        this.bitmap=barcode;
         putResult(result);
+
 //        对此次扫描结果不满意可以调用
 //        reScan();
     }
@@ -333,10 +332,11 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     private void putResult(String result) {//返回扫描结果
         intent.putExtra("result", result);
         Bundle bundle=new Bundle();
-        Float scale=200f/(float)bitmap.getWidth();
-        bitmap= PhotoBitmapUtils.getScaleBitmap(bitmap,scale);
-
-        bundle.putParcelable("bitmap",bitmap);
+        if (bitmap!=null) {
+            Float scale=200f/(float)bitmap.getWidth();
+            bitmap= PhotoBitmapUtils.getScaleBitmap(bitmap,scale);
+            bundle.putParcelable("bitmap",bitmap);
+        }
         intent.putExtras(bundle);
         playBeepSoundAndVibrate(true, true);
         setResult(RESULT_OK, intent);//返回string结果

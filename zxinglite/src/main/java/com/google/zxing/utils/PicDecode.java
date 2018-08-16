@@ -1,6 +1,5 @@
 package com.google.zxing.utils;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -191,10 +190,10 @@ public class PicDecode {
      *
      * @param uri
      */
-    public static Bitmap getBitmapFormUri(Activity ac, Uri uri, int doCompress) throws IOException {
+    public static Bitmap getBitmapFormUri(Context context, Uri uri, int doCompress) throws IOException {
         int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
         Log.d(TAG, "Max memory is " + maxMemory + "KB");
-        String path = getRealFilePathFromUri(ac, uri);
+        String path = getRealFilePathFromUri(context, uri);
 
         Bitmap bitmap = null;
         int degree = PhotoBitmapUtils.readPictureDegree(path);
