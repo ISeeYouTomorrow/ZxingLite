@@ -42,7 +42,6 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     public static final int scan_requestCode = 0xb001;
     public Bitmap bitmap = null;
     private static int colorPrimary = 0;
-    private static String title = "";
     private static ResultListener resultListener;
     private Handler handlerZoom;
     private Thread resultThread;
@@ -64,16 +63,18 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     public static void init(@NonNull Activity context, ResultListener resultListener, int colorPrimary, @NonNull String title) {
         try {//检查颜色是否为0
-            title = context.getString(R.string.default_title);
+            if (TextUtils.isEmpty(title)) {
+                title = context.getString(R.string.__zxinglite_default_title);
+            }
             if (!TextUtils.isEmpty(title)) {
-                WeChatCaptureActivity.title = title;
+                BaseCaptureActivity.title = title;
             }
             if (colorPrimary == 0) {
-                colorPrimary = context.getResources().getColor(R.color.colorPrimary);
+                colorPrimary = context.getResources().getColor(R.color.__zxinglite_colorPrimary);
             } else {
             }
         } catch (Exception e) {
-            colorPrimary = context.getResources().getColor(R.color.colorPrimary);
+            colorPrimary = context.getResources().getColor(R.color.__zxinglite_colorPrimary);
             e.printStackTrace();
         }
 
@@ -130,7 +131,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                             return;
                         }
                     } catch (Exception e) {
-                        result = getString(R.string.no_result);
+                        result = getString(R.string.__zxinglite_no_result);
                         surfaceView.post(new Runnable() {
                             @Override
                             public void run() {
@@ -151,10 +152,10 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (checkSelfPermission(Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
-            toast(getString(R.string.get_camera_fail));
+            toast(getString(R.string.__zxinglite_get_camera_fail));
         }
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
-            toast(getString(R.string.get_sd_fail));
+            toast(getString(R.string.__zxinglite_get_sd_fail));
         }
     }
 
@@ -169,7 +170,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_wechat_capture);
+        setContentView(R.layout.__zxinglite_activity_wechat_capture);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
@@ -202,10 +203,10 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
                 if (isTorchOpenning) {
                     isTorchOpenning = false;
-                    lRight.setBackgroundColor(getResources().getColor(R.color.transparent));
+                    lRight.setBackgroundColor(getResources().getColor(R.color.__zxinglite_transparent));
                 } else {
                     isTorchOpenning = true;
-                    lRight.setBackgroundColor(getResources().getColor(R.color.viewfinder_mask));
+                    lRight.setBackgroundColor(getResources().getColor(R.color.__zxinglite_viewfinder_mask));
                 }
                 getCameraManager().setTorch(isTorchOpenning);
             }
@@ -325,7 +326,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
             innerIntent.setAction(Intent.ACTION_PICK);
         }
         innerIntent.setType("image/*");
-        Intent wrapperIntent = Intent.createChooser(innerIntent, getString(R.string.choose_qrcode));
+        Intent wrapperIntent = Intent.createChooser(innerIntent, getString(R.string.__zxinglite_choose_qrcode));
         startActivityForResult(wrapperIntent, select_requestCode);
     }
 
@@ -343,7 +344,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         if (resultListener != null) {
             resultListener.onResult(result);
         }
-        if (result != getString(R.string.no_result)) {
+        if (result != getString(R.string.__zxinglite_no_result)) {
             finish();
         }
     }

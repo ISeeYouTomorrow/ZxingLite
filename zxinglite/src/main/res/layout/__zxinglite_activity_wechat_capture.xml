@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/zxing_titlebar"></include>
+    <include layout="@layout/__zxinglite_zxing_titlebar"></include>
 
 
     <RelativeLayout
@@ -85,7 +85,7 @@
 
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="@color/colorPrimary"
+        android:background="@color/__zxinglite_colorPrimary"
         android:scaleType="centerInside"
         android:src="@drawable/ic_crop_original_48dp" />
 </LinearLayout>

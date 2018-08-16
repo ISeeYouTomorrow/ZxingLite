@@ -1,10 +1,12 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.google.zxing">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.google.zxing">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <application android:allowBackup="true" android:label="@string/app_name"
+    <application
+        android:allowBackup="true"
         android:supportsRtl="true">
         <activity
             android:name=".activity.DefaultCaptureActivity"
@@ -12,9 +14,8 @@
 
         <activity
             android:name="com.google.zxing.activity.WeChatCaptureActivity"
-            android:screenOrientation="portrait"
             android:launchMode="standard"
-            />
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

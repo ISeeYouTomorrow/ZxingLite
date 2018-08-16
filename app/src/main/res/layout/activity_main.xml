@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="yangxixi.zxinglib.MainActivity">
+    tools:context="locky.zxinglib.MainActivity">
 
     <Button
         android:id="@+id/default_start"

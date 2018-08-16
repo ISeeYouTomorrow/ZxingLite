@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 28
-
+    resourcePrefix "__zxinglite_"
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 28

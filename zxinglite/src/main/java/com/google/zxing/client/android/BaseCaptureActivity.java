@@ -70,6 +70,7 @@ public abstract class BaseCaptureActivity extends Activity implements SurfaceHol
     private Map<DecodeHintType, ?> decodeHints;
     private String characterSet;
     private IntentSource source;
+    protected static String title="zxingLite";
 
     public ViewfinderView getViewfinderView() {
         return viewfinderView;
@@ -239,7 +240,7 @@ public abstract class BaseCaptureActivity extends Activity implements SurfaceHol
 
     private void displayFrameworkBugMessageAndExit() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.app_name));
+        builder.setTitle(title);
         builder.setMessage("相机故障，可能是拍照和录像相关权限未打开，请尝试打开再重试。");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
@@ -315,7 +316,7 @@ public abstract class BaseCaptureActivity extends Activity implements SurfaceHol
         if (points != null && points.length > 0) {
             Canvas canvas = new Canvas(barcode);
             Paint paint = new Paint();
-            paint.setColor(getResources().getColor(R.color.result_points));
+            paint.setColor(getResources().getColor(R.color.__zxinglite_result_points));
             if (points.length == 2) {
                 paint.setStrokeWidth(4.0f);
                 drawLine(canvas, paint, points[0], points[1], scaleFactor);

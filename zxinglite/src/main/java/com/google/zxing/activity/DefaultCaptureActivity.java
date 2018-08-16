@@ -24,7 +24,7 @@ public class DefaultCaptureActivity extends BaseCaptureActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_capture);
+        setContentView(R.layout.__zxinglite_activity_capture);
         surfaceView = (SurfaceView) findViewById(R.id.preview_view);
         viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
     }

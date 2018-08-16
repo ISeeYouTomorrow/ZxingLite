@@ -3,7 +3,7 @@
     android:id="@+id/titlebar_background"
     android:layout_width="match_parent"
     android:layout_height="48dp"
-    android:background="@color/colorPrimary">
+    android:background="@color/__zxinglite_colorPrimary">
 
     <!-- 标题 -->
     <TextView
@@ -13,7 +13,7 @@
         android:layout_centerInParent="true"
         android:singleLine="true"
         android:text="标题"
-        android:textSize="@dimen/T2"
+        android:textSize="@dimen/__zxinglite_T2"
         android:textColor="@android:color/white" />
 
     <!-- 返回 -->
@@ -31,7 +31,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:scaleType="centerInside"
-            android:src="@mipmap/zxing_ic_back"/>
+            android:src="@mipmap/__zxinglite_zxing_ic_back"/>
 
     </LinearLayout>
 
@@ -52,7 +52,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:scaleType="centerInside"
-            android:src="@mipmap/zxing_torch"
+            android:src="@mipmap/__zxinglite_zxing_torch"
             />
 
     </LinearLayout>

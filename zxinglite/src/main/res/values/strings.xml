@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">ZxingLite</string>
-    <string name="choose_qrcode">choose qrcode</string>
-    <string name="no_result">no result</string>
-    <string name="default_title">scan QRcode</string>
-    <string name="get_camera_fail">get camera fail</string>
-    <string name="get_sd_fail">get sdcard fail</string>
+    <string name="__zxinglite_app_name">ZxingLite</string>
+    <string name="__zxinglite_choose_qrcode">choose qrcode</string>
+    <string name="__zxinglite_no_result">no result</string>
+    <string name="__zxinglite_default_title">scan QRcode</string>
+    <string name="__zxinglite_get_camera_fail">get camera fail</string>
+    <string name="__zxinglite_get_sd_fail">get sdcard fail</string>
 </resources>

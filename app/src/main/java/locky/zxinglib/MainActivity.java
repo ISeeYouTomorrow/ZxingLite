@@ -1,4 +1,4 @@
-package yangxixi.zxinglib;
+package locky.zxinglib;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements ResultListener {
             @Override
             public void onClick(View v) {
 
-                WeChatCaptureActivity.init(MainActivity.this, MainActivity.this, getResources().getColor(R.color.colorPrimary), "");
+                WeChatCaptureActivity.init(MainActivity.this, MainActivity.this, getResources().getColor(R.color.colorPrimary), "二维码扫描");
 //      或者
 //    WeChatCaptureActivity.init(MainActivity.this,null,getResources().getColor(R.color.colorPrimary),"");
 
