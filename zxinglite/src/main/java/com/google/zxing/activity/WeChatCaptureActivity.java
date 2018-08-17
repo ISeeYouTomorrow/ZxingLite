@@ -26,7 +26,7 @@ import android.widget.Toast;
 import com.google.zxing.R;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.AutoScannerView;
-import com.google.zxing.client.android.BaseCaptureActivity;
+import com.google.zxing.client.android.CaptureActivity;
 import com.google.zxing.listener.ResultListener;
 import com.google.zxing.utils.PhotoBitmapUtils;
 import com.google.zxing.utils.PicDecode;
@@ -36,7 +36,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 /**
  * 模仿微信的扫描界面
  */
-public class WeChatCaptureActivity extends BaseCaptureActivity {
+public class WeChatCaptureActivity extends CaptureActivity {
     private static final String TAG = "WeChatCaptureActivity";
     private static final int select_requestCode = 0xb002;
     public static final int scan_requestCode = 0xb001;
@@ -67,7 +67,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                 title = context.getString(R.string.__zxinglite_default_title);
             }
             if (!TextUtils.isEmpty(title)) {
-                BaseCaptureActivity.title = title;
+                CaptureActivity.title = title;
             }
             if (colorPrimary == 0) {
                 colorPrimary = context.getResources().getColor(R.color.__zxinglite_colorPrimary);
@@ -117,8 +117,17 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                 public void run() {
                     try {
                         bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-
-                        result = PicDecode.scanImage(WeChatCaptureActivity.this, uri).getText();
+                        Result zxingResult = PicDecode.scanImage(WeChatCaptureActivity.this, uri);
+                        if (zxingResult != null) {
+                            result = zxingResult.getText();
+                        } else {
+                            surfaceView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    result=getString(R.string.__zxinglite_no_result);
+                                    putResult(result);}
+                            });
+                        }
 
                         if (!TextUtils.isEmpty(result)) {
                             surfaceView.post(new Runnable() {
@@ -130,12 +139,13 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
                         } else {
                             return;
                         }
-                    } catch (Exception e) {
+                    } catch (final Exception e) {
                         result = getString(R.string.__zxinglite_no_result);
                         surfaceView.post(new Runnable() {
                             @Override
                             public void run() {
-                                putResult(result);
+                                toast(e.getMessage());
+//                                putResult(result);
                             }
                         });
                         e.printStackTrace();
@@ -161,6 +171,7 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     void toast(String s) {
         Toast.makeText(WeChatCaptureActivity.this, s, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "toast: " + s);
     }
 
     public void setBitmap(Bitmap bitmap) {
@@ -310,8 +321,12 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     @Override
     public void dealDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
-        result = rawResult.getText();
-        this.bitmap=barcode;
+        if (rawResult != null) {
+            result = rawResult.getText();
+        } else {
+            return;
+        }
+        this.bitmap = barcode;
         putResult(result);
 
 //        对此次扫描结果不满意可以调用
@@ -332,11 +347,11 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
 
     private void putResult(String result) {//返回扫描结果
         intent.putExtra("result", result);
-        Bundle bundle=new Bundle();
-        if (bitmap!=null) {
-            Float scale=200f/(float)bitmap.getWidth();
-            bitmap= PhotoBitmapUtils.getScaleBitmap(bitmap,scale);
-            bundle.putParcelable("bitmap",bitmap);
+        Bundle bundle = new Bundle();
+        if (bitmap != null) {
+            Float scale = 150f / (float) bitmap.getWidth();
+            bitmap = PhotoBitmapUtils.getScaleBitmap(bitmap, scale);
+            bundle.putParcelable("bitmap", bitmap);
         }
         intent.putExtras(bundle);
         playBeepSoundAndVibrate(true, true);
@@ -344,11 +359,10 @@ public class WeChatCaptureActivity extends BaseCaptureActivity {
         if (resultListener != null) {
             resultListener.onResult(result);
         }
-        if (result != getString(R.string.__zxinglite_no_result)) {
+        if (!result.equals(getString(R.string.__zxinglite_no_result))) {
             finish();
         }
     }
-
 
 
     @Override

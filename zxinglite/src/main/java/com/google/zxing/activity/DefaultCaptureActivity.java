@@ -7,14 +7,14 @@ import android.view.SurfaceView;
 
 import com.google.zxing.R;
 import com.google.zxing.Result;
-import com.google.zxing.client.android.BaseCaptureActivity;
+import com.google.zxing.client.android.CaptureActivity;
 import com.google.zxing.client.android.ViewfinderView;
 
 
 /**
  * 默认的扫描界面
  */
-public class DefaultCaptureActivity extends BaseCaptureActivity {
+public class DefaultCaptureActivity extends CaptureActivity {
 
     private static final String TAG = DefaultCaptureActivity.class.getSimpleName();
 

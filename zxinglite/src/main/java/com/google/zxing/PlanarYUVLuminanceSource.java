@@ -36,6 +36,11 @@ public final class PlanarYUVLuminanceSource extends LuminanceSource {
   private final int left;
   private final int top;
 
+  public PlanarYUVLuminanceSource(byte[] data, int width, int height) {
+    // 直接返回整幅图像的数据，而不计算聚焦框大小。
+    this(data, width, height, 0, 0, width, height, false);
+  }
+
   public PlanarYUVLuminanceSource(byte[] yuvData,
                                   int dataWidth,
                                   int dataHeight,

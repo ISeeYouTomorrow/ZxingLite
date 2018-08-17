@@ -100,12 +100,11 @@ public class PicDecode {
             Hashtable<DecodeHintType, Object> hints = new Hashtable();
             hints.put(DecodeHintType.CHARACTER_SET, "UTF-8"); // 设置二维码内容的编码
             hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
-            //复杂模式，开启PURE_BARCODE模式
-//            hints.put(DecodeHintType.PURE_BARCODE, Boolean.FALSE);
+            //复杂模式
+            hints.put(DecodeHintType.PURE_BARCODE, Boolean.FALSE);
 //            hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
             try {
                 scanBitmap = getBitmapFormUri(context, uri, 1);
-//                scanBitmap=decodeSampledBitmapFromFile(getRealFilePathFromUri(context,uri),1024,1024);
                 context.setBitmap(scanBitmap);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -115,16 +114,9 @@ public class PicDecode {
             int width = scanBitmap.getWidth();
             int height = scanBitmap.getHeight();
             byte[] dataYUV = getYUV420sp(width, height, scanBitmap);
-            PlanarYUVLuminanceSource source2 = new PlanarYUVLuminanceSource(dataYUV,
-                    width,
-                    height,
-                    0, 0,
-                    width,
-                    height,
-                    false);
+            PlanarYUVLuminanceSource source2 = new PlanarYUVLuminanceSource(dataYUV, width, height);
             BinaryBitmap binaryBitmap2 = new BinaryBitmap(new HybridBinarizer(source2));
             MultiFormatReader reader = new MultiFormatReader();
-//            scanBitmap.recycle();
             result = reader.decode(binaryBitmap2, hints);
             Log.e(TAG, result.getText());
         } catch (NotFoundException e1) {

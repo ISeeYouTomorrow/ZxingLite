@@ -39,12 +39,12 @@ public final class Encoder {
 
   // The original table is defined in the table 5 of JISX0510:2004 (p.19).
   private static final int[] ALPHANUMERIC_TABLE = {
-      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  // 0x00-0x0f
-      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  // 0x10-0x1f
-      36, -1, -1, -1, 37, 38, -1, -1, -1, -1, 39, 40, -1, 41, 42, 43,  // 0x20-0x2f
-      0,   1,  2,  3,  4,  5,  6,  7,  8,  9, 44, -1, -1, -1, -1, -1,  // 0x30-0x3f
-      -1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,  // 0x40-0x4f
-      25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, -1,  // 0x50-0x5f
+          -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  // 0x00-0x0f
+          -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  // 0x10-0x1f
+          36, -1, -1, -1, 37, 38, -1, -1, -1, -1, 39, 40, -1, 41, 42, 43,  // 0x20-0x2f
+          0,   1,  2,  3,  4,  5,  6,  7,  8,  9, 44, -1, -1, -1, -1, -1,  // 0x30-0x3f
+          -1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,  // 0x40-0x4f
+          25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, -1,  // 0x50-0x5f
   };
 
   static final String DEFAULT_BYTE_MODE_ENCODING = "ISO-8859-1";
@@ -56,9 +56,9 @@ public final class Encoder {
   // Basically it applies four rules and summate all penalties.
   private static int calculateMaskPenalty(ByteMatrix matrix) {
     return MaskUtil.applyMaskPenaltyRule1(matrix)
-        + MaskUtil.applyMaskPenaltyRule2(matrix)
-        + MaskUtil.applyMaskPenaltyRule3(matrix)
-        + MaskUtil.applyMaskPenaltyRule4(matrix);
+            + MaskUtil.applyMaskPenaltyRule2(matrix)
+            + MaskUtil.applyMaskPenaltyRule3(matrix)
+            + MaskUtil.applyMaskPenaltyRule4(matrix);
   }
 
   /**
@@ -92,11 +92,18 @@ public final class Encoder {
     BitArray headerBits = new BitArray();
 
     // Append ECI segment if applicable
-    if (mode == Mode.BYTE && (hasEncodingHint || !DEFAULT_BYTE_MODE_ENCODING.equals(encoding))) {
+    if (mode == Mode.BYTE && hasEncodingHint) {
       CharacterSetECI eci = CharacterSetECI.getCharacterSetECIByName(encoding);
       if (eci != null) {
         appendECI(eci, headerBits);
       }
+    }
+
+    // Append the FNC1 mode header for GS1 formatted data if applicable
+    boolean hasGS1FormatHint = hints != null && hints.containsKey(EncodeHintType.GS1_FORMAT);
+    if (hasGS1FormatHint && Boolean.valueOf(hints.get(EncodeHintType.GS1_FORMAT).toString())) {
+      // GS1 formatted codes are prefixed with a FNC1 in first position mode header
+      appendModeInfo(Mode.FNC1_FIRST_POSITION, headerBits);
     }
 
     // (With ECI in place,) Write the mode marker
@@ -135,9 +142,9 @@ public final class Encoder {
 
     // Interleave data bits with error correction code.
     BitArray finalBits = interleaveWithECBytes(headerAndDataBits,
-                                               version.getTotalCodewords(),
-                                               numDataBytes,
-                                               ecBlocks.getNumBlocks());
+            version.getTotalCodewords(),
+            numDataBytes,
+            ecBlocks.getNumBlocks());
 
     QRCode qrCode = new QRCode();
 
@@ -278,22 +285,22 @@ public final class Encoder {
     }
     throw new WriterException("Data too big");
   }
-  
+
   /**
    * @return true if the number of input bits will fit in a code with the specified version and
    * error correction level.
    */
   private static boolean willFit(int numInputBits, Version version, ErrorCorrectionLevel ecLevel) {
-      // In the following comments, we use numbers of Version 7-H.
-      // numBytes = 196
-      int numBytes = version.getTotalCodewords();
-      // getNumECBytes = 130
-      Version.ECBlocks ecBlocks = version.getECBlocksForLevel(ecLevel);
-      int numEcBytes = ecBlocks.getTotalECCodewords();
-      // getNumDataBytes = 196 - 130 = 66
-      int numDataBytes = numBytes - numEcBytes;
-      int totalInputBytes = (numInputBits + 7) / 8;
-      return numDataBytes >= totalInputBytes;
+    // In the following comments, we use numbers of Version 7-H.
+    // numBytes = 196
+    int numBytes = version.getTotalCodewords();
+    // getNumECBytes = 130
+    Version.ECBlocks ecBlocks = version.getECBlocksForLevel(ecLevel);
+    int numEcBytes = ecBlocks.getTotalECCodewords();
+    // getNumDataBytes = 196 - 130 = 66
+    int numDataBytes = numBytes - numEcBytes;
+    int totalInputBytes = (numInputBits + 7) / 8;
+    return numDataBytes >= totalInputBytes;
   }
 
   /**
@@ -303,14 +310,14 @@ public final class Encoder {
     int capacity = numDataBytes * 8;
     if (bits.getSize() > capacity) {
       throw new WriterException("data bits cannot fit in the QR Code" + bits.getSize() + " > " +
-          capacity);
+              capacity);
     }
     for (int i = 0; i < 4 && bits.getSize() < capacity; ++i) {
       bits.appendBit(false);
     }
     // Append termination bits. See 8.4.8 of JISX0510:2004 (p.24) for details.
     // If the last byte isn't 8-bit aligned, we'll add padding bits.
-    int numBitsInLastByte = bits.getSize() & 0x07;    
+    int numBitsInLastByte = bits.getSize() & 0x07;
     if (numBitsInLastByte > 0) {
       for (int i = numBitsInLastByte; i < 8; i++) {
         bits.appendBit(false);
@@ -367,10 +374,10 @@ public final class Encoder {
     }
     // 196 = (13 + 26) * 4 + (14 + 26) * 1
     if (numTotalBytes !=
-        ((numDataBytesInGroup1 + numEcBytesInGroup1) *
-            numRsBlocksInGroup1) +
-            ((numDataBytesInGroup2 + numEcBytesInGroup2) *
-                numRsBlocksInGroup2)) {
+            ((numDataBytesInGroup1 + numEcBytesInGroup1) *
+                    numRsBlocksInGroup1) +
+                    ((numDataBytesInGroup2 + numEcBytesInGroup2) *
+                            numRsBlocksInGroup2)) {
       throw new WriterException("Total bytes mismatch");
     }
 
@@ -410,8 +417,8 @@ public final class Encoder {
       int[] numDataBytesInBlock = new int[1];
       int[] numEcBytesInBlock = new int[1];
       getNumDataBytesAndNumECBytesForBlockID(
-          numTotalBytes, numDataBytes, numRSBlocks, i,
-          numDataBytesInBlock, numEcBytesInBlock);
+              numTotalBytes, numDataBytes, numRSBlocks, i,
+              numDataBytesInBlock, numEcBytesInBlock);
 
       int size = numDataBytesInBlock[0];
       byte[] dataBytes = new byte[size];
@@ -449,7 +456,7 @@ public final class Encoder {
     }
     if (numTotalBytes != result.getSizeInBytes()) {  // Should be same.
       throw new WriterException("Interleaving error: " + numTotalBytes + " and " +
-          result.getSizeInBytes() + " differ.");
+              result.getSizeInBytes() + " differ.");
     }
 
     return result;
@@ -563,7 +570,7 @@ public final class Encoder {
   }
 
   static void append8BitBytes(String content, BitArray bits, String encoding)
-      throws WriterException {
+          throws WriterException {
     byte[] bytes;
     try {
       bytes = content.getBytes(encoding);
@@ -582,8 +589,11 @@ public final class Encoder {
     } catch (UnsupportedEncodingException uee) {
       throw new WriterException(uee);
     }
-    int length = bytes.length;
-    for (int i = 0; i < length; i += 2) {
+    if (bytes.length % 2 != 0) {
+      throw new WriterException("Kanji byte size not even");
+    }
+    int maxI = bytes.length - 1; // bytes.length must be even
+    for (int i = 0; i < maxI; i += 2) {
       int byte1 = bytes[i] & 0xFF;
       int byte2 = bytes[i + 1] & 0xFF;
       int code = (byte1 << 8) | byte2;

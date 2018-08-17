@@ -94,11 +94,17 @@ public enum EncodeHintType {
    * A positive number (1, 2, .. 32) specifies a normal (non-compact) Aztec code.
    * (Type {@link Integer}, or {@link String} representation of the integer value).
    */
-   AZTEC_LAYERS,
-   
-   /**
-    * Specifies the exact version of QR code to be encoded.
-    * (Type {@link Integer}, or {@link String} representation of the integer value).
-    */
-   QR_VERSION,
+  AZTEC_LAYERS,
+
+  /**
+   * Specifies the exact version of QR code to be encoded.
+   * (Type {@link Integer}, or {@link String} representation of the integer value).
+   */
+  QR_VERSION,
+
+  /**
+   * Specifies whether the data should be encoded to the GS1 standard (type {@link Boolean}, or "true" or "false"
+   * {@link String } value).
+   */
+  GS1_FORMAT,
 }

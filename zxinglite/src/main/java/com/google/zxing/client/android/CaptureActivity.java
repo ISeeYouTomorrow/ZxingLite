@@ -10,7 +10,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,9 +37,9 @@ import java.util.Map;
  * Created by yangxixi on 16/11/21.
  */
 
-public abstract class BaseCaptureActivity extends Activity implements SurfaceHolder.Callback {
+public abstract class CaptureActivity extends Activity implements SurfaceHolder.Callback {
 
-    private static final String TAG = BaseCaptureActivity.class.getSimpleName();
+    private static final String TAG = CaptureActivity.class.getSimpleName();
 
     private static final String SCHEME = "package";
     /**

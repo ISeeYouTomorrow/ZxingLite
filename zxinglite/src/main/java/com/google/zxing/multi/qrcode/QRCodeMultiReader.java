@@ -68,7 +68,7 @@ public final class QRCodeMultiReader extends QRCodeReader implements MultipleBar
           ((QRCodeDecoderMetaData) decoderResult.getOther()).applyMirroredCorrection(points);
         }
         Result result = new Result(decoderResult.getText(), decoderResult.getRawBytes(), points,
-                                   BarcodeFormat.QR_CODE);
+                BarcodeFormat.QR_CODE);
         List<byte[]> byteSegments = decoderResult.getByteSegments();
         if (byteSegments != null) {
           result.putMetadata(ResultMetadataType.BYTE_SEGMENTS, byteSegments);
@@ -79,9 +79,9 @@ public final class QRCodeMultiReader extends QRCodeReader implements MultipleBar
         }
         if (decoderResult.hasStructuredAppend()) {
           result.putMetadata(ResultMetadataType.STRUCTURED_APPEND_SEQUENCE,
-                             decoderResult.getStructuredAppendSequenceNumber());
+                  decoderResult.getStructuredAppendSequenceNumber());
           result.putMetadata(ResultMetadataType.STRUCTURED_APPEND_PARITY,
-                             decoderResult.getStructuredAppendParity());
+                  decoderResult.getStructuredAppendParity());
         }
         results.add(result);
       } catch (ReaderException re) {
@@ -130,7 +130,7 @@ public final class QRCodeMultiReader extends QRCodeReader implements MultipleBar
       if (saResult.getResultMetadata().containsKey(ResultMetadataType.BYTE_SEGMENTS)) {
         @SuppressWarnings("unchecked")
         Iterable<byte[]> byteSegments =
-            (Iterable<byte[]>) saResult.getResultMetadata().get(ResultMetadataType.BYTE_SEGMENTS);
+                (Iterable<byte[]>) saResult.getResultMetadata().get(ResultMetadataType.BYTE_SEGMENTS);
         for (byte[] segment : byteSegments) {
           byteSegmentLength += segment.length;
         }
@@ -146,7 +146,7 @@ public final class QRCodeMultiReader extends QRCodeReader implements MultipleBar
       if (saResult.getResultMetadata().containsKey(ResultMetadataType.BYTE_SEGMENTS)) {
         @SuppressWarnings("unchecked")
         Iterable<byte[]> byteSegments =
-            (Iterable<byte[]>) saResult.getResultMetadata().get(ResultMetadataType.BYTE_SEGMENTS);
+                (Iterable<byte[]>) saResult.getResultMetadata().get(ResultMetadataType.BYTE_SEGMENTS);
         for (byte[] segment : byteSegments) {
           System.arraycopy(segment, 0, newByteSegment, byteSegmentIndex, segment.length);
           byteSegmentIndex += segment.length;
